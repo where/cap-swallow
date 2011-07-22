@@ -1,0 +1,29 @@
+default: &DEFAULT
+  application: where_web
+  repository: 'git@github.com:where/where_web.git'
+  gateway_server: 'login.aws-est.where.com'
+  deploy_to: '/usr/share/where/where_web'
+  deploy_via: remote_cache
+  user: deploy
+  default_branch: master
+  use_sudo: false
+  scm: git
+
+staging: 
+  <<: *DEFAULT
+  env_name: web-stg
+  rails_env: staging
+
+production: &PROD
+  <<: *DEFAULT
+  env_name: web.ss
+  rails_env: production
+  verify_intent: false
+  copy_exclude:
+    - .git*
+
+debug:
+  <<: *PROD
+  env_name: web-dbg
+  verify_intent: false
+
