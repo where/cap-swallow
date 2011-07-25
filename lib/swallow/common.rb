@@ -2,11 +2,13 @@ unless Capistrano::Configuration.respond_to?(:instance)
   abort "capistrano/ext/multistage requires Capistrano 2"
 end
 
-Capistrano::Configuration.instance.load do
-  # Load settings from yaml
-  config = YAML.load_file( File.join(File.dirname(__FILE__), '../../config/deploy-settings.yml'))
+class Hash
+  def recursive_merge(h)
+    self.merge!(h) {|key, _old, _new| if _old.class == Hash then _old.recursive_merge(_new) else _new end  } 
+  end
+end
 
-  settings = {}
+Capistrano::Configuration.instance.load do
 
   def prompt_with_default(var, default, options=[])
     set(var) do
@@ -15,6 +17,20 @@ Capistrano::Configuration.instance.load do
     end
     set var, default if eval("#{var.to_s}.empty?")
   end
+
+  _cset(:application_config) { abort 'Error: The application configuration is not set.' }
+
+  # Load settings from yaml
+  config = YAML.load_file( File.join(File.dirname(__FILE__), '../../config/deploy-settings.yml'))
+
+  if File.exists?(application_config)
+    puts "Loading application config: #{application_config}"
+    config.recursive_merge(YAML.load_file(application_config))
+  else
+    puts "Using defaults only"
+  end
+
+  settings = {}
 
   # Extract available envs from yaml, excluding default
   available_envs = config.keys.reject{ |k| k == 'default'}
@@ -58,7 +74,7 @@ Capistrano::Configuration.instance.load do
   end
 
   # TODO: Move this into the deploy, put soemthing else like this here.
-  puts "Deploying #{settings['branch']} to #{env}"
+  puts "Enviroment: #{settings['branch']} on #{env}"
 
   # yes we could do ruby coolness, but this seems safer
   [:application, :repository, :gateway,

@@ -1,8 +1,5 @@
 default: &DEFAULT
-  application: where_web
-  repository: 'git@github.com:where/where_web.git'
   gateway_server: 'login.aws-est.where.com'
-  deploy_to: '/usr/share/where/where_web'
   deploy_via: remote_cache
   user: deploy
   default_branch: master

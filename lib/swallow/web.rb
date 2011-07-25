@@ -4,8 +4,9 @@ Capistrano::Configuration.instance.load do
     task :tail do
       begin
         run "tail -f #{shared_path}/log/#{env}.log"
-      rescue
-        "Done"
+      rescue Exception => e
+        # tail only exits on a user ctrl+c, this will cause an exception to be thrown.
+        print "\n"
       end
     end
   end
