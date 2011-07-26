@@ -18,10 +18,10 @@ Capistrano::Configuration.instance.load do
     set var, default if eval("#{var.to_s}.empty?")
   end
 
-  _cset(:application_config) { abort 'Error: The application configuration is not set.' }
+  _cset(:application_config) { "#{Dir.pwd}/config/deploy.yml" }
 
   # Load settings from yaml
-  config = YAML.load_file( File.join(File.dirname(__FILE__), '../../config/deploy-settings.yml'))
+  config = YAML.load_file( File.join(File.dirname(__FILE__), '../../config/deploy.yml'))
 
   if File.exists?(application_config)
     puts "Loading application config: #{application_config}"
