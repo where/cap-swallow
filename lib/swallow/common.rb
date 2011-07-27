@@ -1,7 +1,3 @@
-unless Capistrano::Configuration.respond_to?(:instance)
-  abort "capistrano/ext/multistage requires Capistrano 2"
-end
-
 class Hash
   def recursive_merge(h)
     self.merge!(h) {|key, _old, _new| if _old.class == Hash then _old.recursive_merge(_new) else _new end  } 
@@ -9,7 +5,7 @@ class Hash
 end
 
 Capistrano::Configuration.instance.load do
-
+begin
   def prompt_with_default(var, default, options=[])
     set(var) do
       opts = options.length > 0 ? "(#{options.join(', ')})" : ''
@@ -88,4 +84,7 @@ Capistrano::Configuration.instance.load do
   role :web, "app01.#{env_name}", "app02.#{env_name}"
   role :app,  "app01.#{env_name}", "app02.#{env_name}"
   role :db,  "app01.#{env_name}", :primary => true
+rescue SystemExit, Interrupt
+  puts "\n== User Forced Exit ==\n"
+end
 end
