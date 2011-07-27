@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'capistrano'
+
 Capistrano::Configuration.instance.load do
   namespace :web do
     task :tag do

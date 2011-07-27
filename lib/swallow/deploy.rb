@@ -16,6 +16,7 @@ Capistrano::Configuration.instance(true).load do
       run "cp -p #{production_db_config} #{release_path}/config/database.yml"
     end
 
+    desc "Create a deploy.json tag in the public directory with information about the release."
     task :tag do
       username = gateway.split('@')[0]
       sha = "<unknown>"
@@ -32,6 +33,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     after "deploy:update_code", "deploy:copy_database_configuration"
+    after "deploy:update_code", "deploy:tag"
   end
 
   namespace :bundler do
@@ -67,9 +69,15 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
+  desc "Call the hoptoad:deploy rake task to have hoptoad notified. Called automatically at the end of a standard deploy."
+  namespace :hoptoad do
+    task :deploy do
+      run "cd #{release_path} && rake hoptoad:deploy RAILS_ENV=#{rails_env}"
+    end
+  end
+
   after "deploy:update_code", "bundler:bundle_new_release"
   after "deploy:restart", "s3:sync_assets"
   after "deploy:restart", "deploy:cleanup"
-  after "deploy:restart", "deploy:tag"
-
+  after "deploy:restart", "hoptoad:deploy"
 end
