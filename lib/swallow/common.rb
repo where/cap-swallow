@@ -68,9 +68,6 @@ Capistrano::Configuration.instance.load do
     end
   end
 
-  # TODO: Move this into the deploy, put soemthing else like this here.
-  puts "Enviroment: #{settings['branch']} on #{env}"
-
   # yes we could do ruby coolness, but this seems safer
   [:application, :repository, :gateway,
     :deploy_to, :deploy_via, :user,

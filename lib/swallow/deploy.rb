@@ -1,5 +1,8 @@
 Capistrano::Configuration.instance(true).load do
 
+  require 'rubygems'
+  require 'json'
+
   namespace :deploy do
 
     task :start do ; end
@@ -13,7 +16,16 @@ Capistrano::Configuration.instance(true).load do
       run "cp -p #{production_db_config} #{release_path}/config/database.yml"
     end
 
+    task :tag do
+      username = gateway.split('@')[0]
+      tag = {:user => username, :deployed_at => Time.now, :branch => branch}
+
+      run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
+    end
+
     after "deploy:update_code", "deploy:copy_database_configuration"
+    after "deploy:update_code", "deploy:tag"
+
   end
 
   namespace :bundler do
@@ -49,7 +61,7 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
-  after "deploy:update_code", "bundler:bundle_new_release"
+  #after "deploy:update_code", "bundler:bundle_new_release"
   after "deploy:restart", "s3:sync_assets"
   after "deploy:restart", "deploy:cleanup"
 end
