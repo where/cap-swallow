@@ -18,14 +18,20 @@ Capistrano::Configuration.instance(true).load do
 
     task :tag do
       username = gateway.split('@')[0]
-      tag = {:user => username, :deployed_at => Time.now, :branch => branch}
+      sha = "<unknown>"
+      run "cat #{release_path}/REVISION" do |c, s, d|
+        puts "Data: #{d}"
+        sha = d.strip
+      end
+      tag = {:user => username, 
+             :deployed_at => Time.now, 
+             :sha => sha,
+             :branch => branch}
 
       run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
     end
 
     after "deploy:update_code", "deploy:copy_database_configuration"
-    after "deploy:update_code", "deploy:tag"
-
   end
 
   namespace :bundler do
@@ -64,4 +70,6 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:update_code", "bundler:bundle_new_release"
   after "deploy:restart", "s3:sync_assets"
   after "deploy:restart", "deploy:cleanup"
+  after "deploy:restart", "deploy:tag"
+
 end
