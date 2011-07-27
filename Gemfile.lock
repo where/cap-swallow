@@ -1,7 +1,6 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    deep_merge (0.1.0)
     git (1.2.5)
     jeweler (1.6.3)
       bundler (~> 1.0)
@@ -16,7 +15,6 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.0.0)
-  deep_merge
   jeweler (~> 1.6.3)
   rcov
   shoulda

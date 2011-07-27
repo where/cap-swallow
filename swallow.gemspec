@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Bob Breznak"]
-  s.date = %q{2011-07-22}
+  s.date = %q{2011-07-27}
   s.description = %q{Common where cap recipies}
   s.email = %q{bob.breznak@gmail.com}
   s.extra_rdoc_files = [
@@ -24,10 +24,10 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
-    "config/deploy-settings.yml",
+    "config/deploy.yml",
     "lib/swallow.rb",
-    "lib/swallow/base.rb",
     "lib/swallow/common.rb",
+    "lib/swallow/deploy.rb",
     "lib/swallow/web.rb",
     "swallow.gemspec",
     "test/helper.rb",
