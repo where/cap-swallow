@@ -86,5 +86,6 @@ begin
   role :db,  "app01.#{env_name}", :primary => true
 rescue SystemExit, Interrupt
   puts "\n== User Forced Exit ==\n"
+  exit
 end
 end
