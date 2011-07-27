@@ -1,4 +1,5 @@
-Capistrano::Configuration.instance.load do
+Capistrano::Configuration.instance(true).load do
+
   namespace :deploy do
 
     task :start do ; end
@@ -42,7 +43,13 @@ Capistrano::Configuration.instance.load do
 
   end
 
+  namespace :s3 do
+    task :sync_assets, :roles => :db do
+      run "cd #{release_path} && rake asset:id:upload RAILS_ENV=#{rails_env}"
+    end
+  end
+
   after "deploy:update_code", "bundler:bundle_new_release"
-  #after "deploy:restart", "s3:sync_assets"
+  after "deploy:restart", "s3:sync_assets"
   after "deploy:restart", "deploy:cleanup"
 end

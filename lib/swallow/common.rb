@@ -5,7 +5,6 @@ class Hash
 end
 
 Capistrano::Configuration.instance.load do
-begin
   def prompt_with_default(var, default, options=[])
     set(var) do
       opts = options.length > 0 ? "(#{options.join(', ')})" : ''
@@ -82,10 +81,6 @@ begin
 
   # SERVER ROLES
   role :web, "app01.#{env_name}", "app02.#{env_name}"
-  role :app,  "app01.#{env_name}", "app02.#{env_name}"
-  role :db,  "app01.#{env_name}", :primary => true
-rescue SystemExit, Interrupt
-  puts "\n== User Forced Exit ==\n"
-  exit
-end
+  role :app, "app01.#{env_name}", "app02.#{env_name}"
+  role :db,  "app01.#{env_name}", :primary => true     # This is where Rails migrations will run
 end
