@@ -1,5 +1,9 @@
 Capistrano::Configuration.instance.load do
   namespace :web do
+    task :tag do
+      puts "User: #{user}"
+    end
+
     desc "Tail the enviroment log"
     task :tail do
       begin
