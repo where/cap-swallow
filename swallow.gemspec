@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.authors = ["Bob Breznak"]
   s.date = %q{2011-07-28}
   s.description = %q{Common where cap recipies}
-  s.email = %q{bob.breznak@gmail.com}
+  s.email = %q{bob@where.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.rdoc"
@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
     "test/test_swallow.rb"
   ]
   s.homepage = %q{http://github.com/where/swallow}
-  s.licenses = ["WHERE Shotgun License"]
+  s.licenses = ["MIT license"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.6.2}
   s.summary = %q{Common where cap recipies}
