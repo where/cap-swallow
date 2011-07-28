@@ -15,10 +15,10 @@ require 'jeweler'
 Jeweler::Tasks.new do |gem|
   gem.name = "swallow"
   gem.homepage = "http://github.com/where/swallow"
-  gem.license = "WHERE Shotgun License"
+  gem.license = "MIT license"
   gem.summary = %Q{Common where cap recipies}
   gem.description = %Q{Common where cap recipies}
-  gem.email = "bob.breznak@gmail.com"
+  gem.email = "bob@where.com"
   gem.authors = ["Bob Breznak"]
 end
 Jeweler::RubygemsDotOrgTasks.new

@@ -11,12 +11,13 @@ Capistrano::Configuration.instance(true).load do
       run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}"
     end
 
+    desc "Automatically called as apart of a standard deploy. Copies the database config from the shared directroy over the one provided."
     task :copy_database_configuration do
       production_db_config = "/usr/share/where/shared_config/#{application}.database.yml"
       run "cp -p #{production_db_config} #{release_path}/config/database.yml"
     end
 
-    desc "Create a deploy.json tag in the public directory with information about the release."
+    desc "Automatically called as apart of a standard deploy. Create a deploy.json tag in the public directory with information about the release."
     task :tag do
       username = gateway.split('@')[0]
       sha = "<unknown>"
@@ -24,10 +25,10 @@ Capistrano::Configuration.instance(true).load do
         puts "Data: #{d}"
         sha = d.strip
       end
-      tag = {:user => username, 
-             :deployed_at => Time.now, 
-             :sha => sha,
-             :branch => branch}
+      tag = {:user => username,
+             :deployed_at => Time.now,
+             :branch => branch,
+             :ref => sha }
 
       run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
     end
@@ -38,12 +39,14 @@ Capistrano::Configuration.instance(true).load do
 
   namespace :bundler do
 
+    desc "Automatically called as apart of a standard deploy."
     task :create_symlink, :roles => :app do
       shared_dir = File.join(shared_path, 'bundle')
       release_dir = File.join(release_path, '.bundle')
       run("mkdir -p #{shared_dir} && ln -s #{shared_dir} #{release_dir}")
     end
 
+    desc "Automatically called as apart of a standard deploy."
     task :install, :roles => :app do
       run "cd #{release_path} && sudo bundle install"
 
@@ -56,6 +59,7 @@ Capistrano::Configuration.instance(true).load do
       end
     end
 
+    desc "Automatically called as apart of a standard deploy."
     task :bundle_new_release, :roles => :db do
       bundler.create_symlink
       bundler.install
@@ -63,13 +67,14 @@ Capistrano::Configuration.instance(true).load do
 
   end
 
+  desc "Automatically called as apart of a standard deploy. Runs the rake task asset:id:upload."
   namespace :s3 do
     task :sync_assets, :roles => :db do
       run "cd #{release_path} && rake asset:id:upload RAILS_ENV=#{rails_env}"
     end
   end
 
-  desc "Call the hoptoad:deploy rake task to have hoptoad notified. Called automatically at the end of a standard deploy."
+  desc "Automatically called as apart of a standard deploy. Runs the hoptoad:deploy rake task to have hoptoad notified."
   namespace :hoptoad do
     task :deploy do
       run "cd #{release_path} && rake hoptoad:deploy RAILS_ENV=#{rails_env}"
