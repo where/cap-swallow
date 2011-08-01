@@ -80,7 +80,8 @@ Capistrano::Configuration.instance.load do
   end
 
   # SERVER ROLES
-  role :web, "app01.#{env_name}", "app02.#{env_name}"
-  role :app, "app01.#{env_name}", "app02.#{env_name}"
-  role :db,  "app01.#{env_name}", :primary => true     # This is where Rails migrations will run
+  role :web,  "app01.#{env_name}", "app02.#{env_name}"
+  role :app,  "app01.#{env_name}", "app02.#{env_name}"
+  role :db,   "app01.#{env_name}", :primary => true     # This is where Rails migrations will run
+  role :cron, "app01.#{env_name}", :primary => true     # This is where cron jobs will be added
 end

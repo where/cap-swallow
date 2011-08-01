@@ -5,6 +5,7 @@ default: &DEFAULT
   default_branch: master
   use_sudo: false
   scm: git
+  uses_resque: false
 
 staging: 
   <<: *DEFAULT

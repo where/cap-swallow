@@ -38,6 +38,14 @@ Capistrano::Configuration.instance(true).load do
       run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
     end
 
+    desc "Automaticall called as apart of a standard deploy. Copies the shared resque config to the application if there is a `uses_resque` configuration"
+    task :copy_resque_configuration do
+      if uses_resque
+        resque_config = "/usr/share/where/shared_config/#{application}.resque.yml"
+        run "cp -p #{resque_config} #{release_path}/config/resque.yml"
+      end
+    end
+
     after "deploy:update_code", "deploy:copy_database_configuration"
     after "deploy:update_code", "deploy:tag"
   end
@@ -89,7 +97,16 @@ Capistrano::Configuration.instance(true).load do
   before "hoptoad:deploy", "deploy:setup_current_ref"
 
   after "deploy:update_code", "bundler:bundle_new_release"
+  after "deploy:update_code", "deploy:copy_resque_configuration"
+
   after "deploy:restart", "s3:sync_assets"
   after "deploy:restart", "deploy:cleanup"
   after "deploy:restart", "hoptoad:deploy"
+
+  # needs to be after the setting of the bundler:bundle_new_release callback
+  set :whenever_command, "bundle exec whenever"
+  set :whenever_environment, env
+  set :whenever_roles, :cron
+  require "whenever/capistrano"
+
 end
