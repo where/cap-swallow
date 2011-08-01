@@ -6,6 +6,7 @@ default: &DEFAULT
   use_sudo: false
   scm: git
   uses_resque: false
+  uses_whenever_cron: false
 
 staging: 
   <<: *DEFAULT

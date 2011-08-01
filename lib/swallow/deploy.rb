@@ -103,10 +103,12 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:restart", "deploy:cleanup"
   after "deploy:restart", "hoptoad:deploy"
 
-  # needs to be after the setting of the bundler:bundle_new_release callback
-  set :whenever_command, "bundle exec whenever"
-  set :whenever_environment, env
-  set :whenever_roles, :cron
-  require "whenever/capistrano"
 
+  if uses_whenever_cron
+    # needs to be after the setting of the bundler:bundle_new_release callback
+    set :whenever_command, "bundle exec whenever"
+    set :whenever_environment, env
+    set :whenever_roles, :cron
+    require "whenever/capistrano"
+  end
 end
