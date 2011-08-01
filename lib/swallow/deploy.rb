@@ -25,7 +25,8 @@ Capistrano::Configuration.instance(true).load do
         puts "Data: #{d}"
         sha = d.strip
       end
-      tag = {:user => username,
+      tag = {:app => application, 
+             :user => username,
              :deployed_at => Time.now,
              :branch => branch,
              :ref => sha }
