@@ -68,10 +68,13 @@ Capistrano::Configuration.instance.load do
     end
   end
 
+  settings['username'] = settings['gateway'].split('@')[0] rescue ''
+
   # yes we could do ruby coolness, but this seems safer
   [:application, :repository, :gateway,
     :deploy_to, :deploy_via, :user,
     :env_name, :rails_env, :default_env,
+    :username,
     :branch, :copy_exclude, :use_sudo, :scm].each do |key| 
     set key, settings[key.to_s] # Settings uses string keys 
   end

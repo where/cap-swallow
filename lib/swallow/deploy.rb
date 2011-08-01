@@ -11,6 +11,15 @@ Capistrano::Configuration.instance(true).load do
       run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}"
     end
 
+    task :setup_current_ref do
+      sha = ''
+      run "cat #{release_path}/REVISION" do |c, s, d|
+        sha = d.strip
+      end
+      set :ref, sha
+      puts "Set Ref: #{sha}"
+    end
+
     desc "Automatically called as apart of a standard deploy. Copies the database config from the shared directroy over the one provided."
     task :copy_database_configuration do
       production_db_config = "/usr/share/where/shared_config/#{application}.database.yml"
@@ -19,17 +28,12 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Automatically called as apart of a standard deploy. Create a deploy.json tag in the public directory with information about the release."
     task :tag do
-      username = gateway.split('@')[0]
-      sha = "<unknown>"
-      run "cat #{release_path}/REVISION" do |c, s, d|
-        puts "Data: #{d}"
-        sha = d.strip
-      end
+      setup_current_ref
       tag = {:app => application, 
              :user => username,
              :deployed_at => Time.now,
              :branch => branch,
-             :ref => sha }
+             :ref => ref }
 
       run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
     end
@@ -77,10 +81,12 @@ Capistrano::Configuration.instance(true).load do
 
   desc "Automatically called as apart of a standard deploy. Runs the hoptoad:deploy rake task to have hoptoad notified."
   namespace :hoptoad do
-    task :deploy do
-      run "cd #{release_path} && rake hoptoad:deploy TO=#{rails_env}"
+    task :deploy, :depends => 'deploy:setup_current_ref' do
+      run "cd #{release_path} && rake hoptoad:deploy TO=#{rails_env} REVISION=#{ref} USER=#{username}"
     end
   end
+
+  before "hoptoad:deploy", "deploy:setup_current_ref"
 
   after "deploy:update_code", "bundler:bundle_new_release"
   after "deploy:restart", "s3:sync_assets"
