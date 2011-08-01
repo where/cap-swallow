@@ -77,7 +77,7 @@ Capistrano::Configuration.instance(true).load do
   desc "Automatically called as apart of a standard deploy. Runs the hoptoad:deploy rake task to have hoptoad notified."
   namespace :hoptoad do
     task :deploy do
-      run "cd #{release_path} && rake hoptoad:deploy RAILS_ENV=#{rails_env}"
+      run "cd #{release_path} && rake hoptoad:deploy TO=#{rails_env}"
     end
   end
 

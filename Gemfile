@@ -1,6 +1,7 @@
 source "http://rubygems.org"
 
 gem 'json'
+gem 'rake', '0.8.7'
 
 group :development do
   gem "shoulda", ">= 0"
