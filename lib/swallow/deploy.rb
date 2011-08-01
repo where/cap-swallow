@@ -80,6 +80,16 @@ Capistrano::Configuration.instance(true).load do
 
   end
 
+  namespace :whenever_cron do
+    task :deploy, :roles => :cron do
+      if uses_whenever_cron
+        set :whenever_command, "bundle exec whenever"
+        set :whenever_environment, env
+        set :whenever_roles, :cron
+      end
+    end
+  end
+
   desc "Automatically called as apart of a standard deploy. Runs the rake task asset:id:upload."
   namespace :s3 do
     task :sync_assets, :roles => :db do
@@ -99,17 +109,14 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:update_code", "bundler:bundle_new_release"
   after "deploy:update_code", "deploy:copy_resque_configuration"
 
+  after "bundler:bundle_new_release", "whenever_cron:deploy"
+
   after "deploy:restart", "s3:sync_assets"
   after "deploy:restart", "deploy:cleanup"
   after "deploy:restart", "hoptoad:deploy"
 
-
-  if uses_whenever_cron
-    run "echo 'Running Whenever Cron'"
-    # needs to be after the setting of the bundler:bundle_new_release callback
-    set :whenever_command, "bundle exec whenever"
-    set :whenever_environment, env
-    set :whenever_roles, :cron
+  if uses_whenever_cron 
     require "whenever/capistrano"
   end
+
 end
