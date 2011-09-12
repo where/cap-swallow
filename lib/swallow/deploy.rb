@@ -2,6 +2,7 @@ Capistrano::Configuration.instance(true).load do
 
   require 'rubygems'
   require 'json'
+  require 'new_relic/recipes'
 
   namespace :deploy do
 
@@ -111,10 +112,11 @@ Capistrano::Configuration.instance(true).load do
 
   after "bundler:bundle_new_release", "whenever_cron:deploy"
 
+  after "deploy:update", "newrelic:notice_deployment"
+
   after "deploy:restart", "s3:sync_assets"
   after "deploy:restart", "deploy:cleanup"
   after "deploy:restart", "hoptoad:deploy"
-
   if uses_whenever_cron 
     require "whenever/capistrano"
   end
