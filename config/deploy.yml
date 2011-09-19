@@ -13,6 +13,16 @@ staging:
   env_name: web-stg
   rails_env: staging
 
+staging2: 
+  <<: *DEFAULT
+  env_name: web-stg2
+  rails_env: staging
+
+mobile: 
+  <<: *DEFAULT
+  env_name: web-mobile
+  rails_env: staging
+
 production: &PROD
   <<: *DEFAULT
   env_name: web.ss
