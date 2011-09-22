@@ -82,7 +82,7 @@ Capistrano::Configuration.instance.load do
 
   # SERVER ROLES
   server_names = (1..(number_of_app_servers||2)).to_a.collect do |n| 
-    "app#{('%2d' % n).gsub(' ', '0')}.#{env_name}"
+    "app#{('%02d' % n)}.#{env_name}"
   end
 
   send(:role, *[:web,  *server_names])
