@@ -18,6 +18,11 @@ staging2:
   env_name: web-stg2
   rails_env: staging
 
+demo:
+  <<: *DEFAULT
+  env_name: web-demo
+  rails_env: demo
+
 mobile: 
   <<: *DEFAULT
   env_name: web-mobile
