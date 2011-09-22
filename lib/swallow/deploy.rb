@@ -2,6 +2,7 @@ Capistrano::Configuration.instance(true).load do
 
   require 'rubygems'
   require 'json'
+  require 'new_relic/recipes'
 
   namespace :deploy do
 
@@ -102,7 +103,7 @@ Capistrano::Configuration.instance(true).load do
   desc "Automatically called as apart of a standard deploy. Runs the hoptoad:deploy rake task to have hoptoad notified."
   namespace :hoptoad do
     task :deploy, :depends => 'deploy:setup_current_ref' do
-      run "cd #{release_path} && rake hoptoad:deploy TO=#{rails_env} REVISION=#{ref} USER=#{username}"
+      run "cd #{release_path} && rake hoptoad:deploy TO=#{rails_env} REVISION=#{ref} USER=#{username} RAILS_ENV=#{rails_env}"
     end
   end
 
@@ -113,10 +114,11 @@ Capistrano::Configuration.instance(true).load do
 
   after "bundler:bundle_new_release", "whenever_cron:deploy"
 
+  after "deploy:update", "newrelic:notice_deployment"
+
   after "deploy:restart", "s3:sync_assets"
   after "deploy:restart", "deploy:cleanup"
   after "deploy:restart", "hoptoad:deploy"
-
   if uses_whenever_cron 
     require "whenever/capistrano"
   end
