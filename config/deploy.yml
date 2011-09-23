@@ -16,7 +16,7 @@ staging:
 staging2: 
   <<: *DEFAULT
   env_name: web-stg2
-  rails_env: staging
+  rails_env: staging2
 
 mobile: 
   <<: *DEFAULT

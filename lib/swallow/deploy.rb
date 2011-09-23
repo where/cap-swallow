@@ -21,10 +21,16 @@ Capistrano::Configuration.instance(true).load do
       puts "Set Ref: #{sha}"
     end
 
-    desc "Automatically called as apart of a standard deploy. Copies the database config from the shared directroy over the one provided."
+    desc "Automatically called as apart of a standard deploy. Copies the database config from the shared directory over the one provided."
     task :copy_database_configuration do
       production_db_config = "/usr/share/where/shared_config/#{application}.database.yml"
       run "cp -p #{production_db_config} #{release_path}/config/database.yml"
+    end
+
+    desc "Automatically called as apart of a standard deploy. Copies the memcache config from the shared directory over the one provided."
+    task :copy_memcache_configuration do
+      production_mc_config = '/usr/share/where/shared_config/memcache.yml'
+      run "cp -p #{production_mc_config} #{release_path}/config/memcache.yml"
     end
 
     desc "Automatically called as apart of a standard deploy. Create a deploy.json tag in the public directory with information about the release."
@@ -48,6 +54,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     after "deploy:update_code", "deploy:copy_database_configuration"
+    after "deploy:update_code", "deploy:copy_memcache_configuration"
     after "deploy:update_code", "deploy:tag"
   end
 
