@@ -7,6 +7,7 @@ default: &DEFAULT
   scm: git
   uses_resque: false
   uses_whenever_cron: false
+  uses_assets: true
 
 staging: 
   <<: *DEFAULT
@@ -17,6 +18,11 @@ staging2:
   <<: *DEFAULT
   env_name: web-stg2
   rails_env: staging2
+
+demo:
+  <<: *DEFAULT
+  env_name: web-demo
+  rails_env: demo
 
 mobile: 
   <<: *DEFAULT
