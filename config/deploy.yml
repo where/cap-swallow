@@ -25,7 +25,7 @@ demo:
 
 mobile: 
   <<: *DEFAULT
-  env_name: web-mobile
+  env_name: web-touch-stg
   rails_env: staging
 
 production: &PROD
