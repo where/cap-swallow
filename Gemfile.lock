@@ -27,7 +27,6 @@ DEPENDENCIES
   jeweler (~> 1.6.3)
   json
   newrelic_rpm
-  rake (= 0.8.7)
   rcov
   shoulda
   whenever

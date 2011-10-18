@@ -19,6 +19,11 @@ staging2:
   env_name: web-stg2
   rails_env: staging2
 
+sandbox:
+  <<: *DEFAULT
+  env_name: web-sandbox
+  rails_env: staging
+
 demo:
   <<: *DEFAULT
   env_name: web-demo
