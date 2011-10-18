@@ -8,6 +8,7 @@ default: &DEFAULT
   uses_resque: false
   uses_whenever_cron: false
   uses_assets: true
+  number_of_app_servers: 2
 
 staging: 
   <<: *DEFAULT
@@ -23,7 +24,7 @@ sandbox:
   <<: *DEFAULT
   env_name: web-sandbox
   rails_env: staging
-
+  number_of_app_servers: 1
 demo:
   <<: *DEFAULT
   env_name: web-demo

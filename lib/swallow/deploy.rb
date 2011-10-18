@@ -40,6 +40,7 @@ Capistrano::Configuration.instance(true).load do
              :user => username,
              :deployed_at => Time.now,
              :branch => branch,
+             :ruby => RUBY_DESCRIPTION,
              :ref => ref }
 
       run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
