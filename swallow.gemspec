@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "swallow"
-  s.version = "1.2.9"
+  s.version = "1.2.10"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Bob Breznak"]
-  s.date = "2011-10-18"
+  s.date = "2011-10-19"
   s.description = "Common where cap recipies"
   s.email = "bob@where.com"
   s.extra_rdoc_files = [

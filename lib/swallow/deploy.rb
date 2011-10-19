@@ -60,7 +60,10 @@ Capistrano::Configuration.instance(true).load do
   end
 
   namespace :bundler do
-
+    desc "setup Bundler if it is not already setup"
+    task :setup_bundler, :roles => :app do
+      sudo "sh -c 'if [ -z `which bundle` ]; then echo Installing Bundler; sudo gem install bundler; fi'"
+    end
     desc "Automatically called as apart of a standard deploy."
     task :create_symlink, :roles => :app do
       shared_dir = File.join(shared_path, 'bundle')
@@ -87,6 +90,7 @@ Capistrano::Configuration.instance(true).load do
       bundler.install
     end
 
+    before "bundler:install", "deploy:setup"
   end
 
   namespace :whenever_cron do
