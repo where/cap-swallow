@@ -5,7 +5,6 @@ Capistrano::Configuration.instance(true).load do
   require 'new_relic/recipes'
 
   namespace :deploy do
-
     task :start do ; end
     task :stop do  ; end
     task :restart, :roles => :app, :except => { :no_release => true } do
@@ -62,8 +61,9 @@ Capistrano::Configuration.instance(true).load do
   namespace :bundler do
     desc "setup Bundler if it is not already setup"
     task :setup_bundler, :roles => :app do
-      sudo "sh -c 'if [ -z `which bundle` ]; then echo Installing Bundler; sudo gem install bundler; fi'"
+      sudo "echo Installing Bundler; cd #{release_path} && sudo gem install bundler"
     end
+
     desc "Automatically called as apart of a standard deploy."
     task :create_symlink, :roles => :app do
       shared_dir = File.join(shared_path, 'bundle')
@@ -89,8 +89,6 @@ Capistrano::Configuration.instance(true).load do
       bundler.create_symlink
       bundler.install
     end
-
-    before "bundler:install", "deploy:setup"
   end
 
   namespace :whenever_cron do
@@ -119,10 +117,31 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
+  desc "RVM related commands"
+  namespace :rvm do
+
+    desc "Setup the project based on the .rvmrc file"
+    task :setup do
+      run "echo 'RVM Installing #{rvm_ruby}'; rvm install #{rvm_ruby}"
+    end
+
+    desc "Set RVM to trust the application's .rvmrc"
+    task :trust_rvmrc do
+      run "rvm rvmrc trust #{release_path}"
+    end
+  end
+
+  before "deploy:setup", "rvm:setup"
+
   before "hoptoad:deploy", "deploy:setup_current_ref"
+
+  after "deploy:setup", "rvm:trust_rvmrc"
+  after "deploy:setup", "bundler:setup"
 
   after "deploy:update_code", "bundler:bundle_new_release"
   after "deploy:update_code", "deploy:copy_resque_configuration"
+
+  after "deploy", "rvm:trust_rvmrc"
 
   after "bundler:bundle_new_release", "whenever_cron:deploy"
 
@@ -131,6 +150,7 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:restart", "s3:sync_assets" if uses_assets
   after "deploy:restart", "deploy:cleanup"
   after "deploy:restart", "hoptoad:deploy"
+
   if uses_whenever_cron 
     require "whenever/capistrano"
   end
