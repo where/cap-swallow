@@ -142,12 +142,12 @@ Capistrano::Configuration.instance(true).load do
     desc "Setup the project based on the .rvmrc file"
     task :setup, :roles => :app do
       run "echo RVM Installing #{rvm_ruby}; /usr/local/rvm/bin/rvm install #{rvm_ruby}  --with-openssl-dir=/usr/local/rvm/usr"
-      run "echo Creating Gemset #{rvm_ruby}@#{application}; rvm use #{rvm_ruby}@#{application} --create"
+      run "echo Creating Gemset #{rvm_ruby}@#{rvm_gemset}; rvm use #{rvm_ruby}@#{rvm_gemset} --create"
     end
 
     task :init, :roles => :app  do
       require 'rvm/capistrano'
-      set :rvm_ruby_string, "#{rvm_ruby}@#{application}"
+      set :rvm_ruby_string, "#{rvm_ruby}@#{rvm_gemset}"
     end
 
     desc "Set RVM to trust the application's .rvmrc"
@@ -159,6 +159,11 @@ Capistrano::Configuration.instance(true).load do
     task :create_rvmrc, :roles => :app  do
       run "cd #{release_path} && echo '#{rvm_ruby}@#{rvm_gemset}' > .rvmrc"
     end
+
+    desc "Remove existing rvmrc from project if it exists"
+    task :remove_rvmrc do
+      run "rm #{shared_path}/.rvmrc"
+    end
   end
 
   desc "Unicorn related tasks"
@@ -169,6 +174,7 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
+  before "deploy:update_code", "rvm:remove_rvmrc"
   before "deploy:update_code", "rvm:init"
 
   before "deploy:setup", "rvm:setup"
@@ -183,6 +189,7 @@ Capistrano::Configuration.instance(true).load do
 
   after "deploy:update_code", "bundler:bundle_new_release"
   after "deploy:update_code", "deploy:copy_resque_configuration"
+  adter "deploy:update_code", "rvm:create_rvmrc"
   after "deploy:update_code", "rvm:trust_rvmrc"
 
   after "bundler:bundle_new_release", "whenever_cron:deploy"
