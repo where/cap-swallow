@@ -187,10 +187,10 @@ Capistrano::Configuration.instance(true).load do
 
   after "deploy:setup", "unicorn:create_symlink"
 
-  after "deploy:update_code", "bundler:bundle_new_release"
-  after "deploy:update_code", "deploy:copy_resque_configuration"
   after "deploy:update_code", "rvm:create_rvmrc"
   after "deploy:update_code", "rvm:trust_rvmrc"
+  after "deploy:update_code", "bundler:bundle_new_release"
+  after "deploy:update_code", "deploy:copy_resque_configuration"
 
   after "bundler:bundle_new_release", "whenever_cron:deploy"
 
