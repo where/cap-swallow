@@ -6,16 +6,15 @@ Capistrano::Configuration.instance(true).load do
 
   namespace :deploy do
     task :start do
-      run "echo Starting the Unicorn Herd!!"
-      run "RAILS_ENV=#{rails_env} /usr/share/where/bin/#{application} start"
+      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} start"
     end
 
     task :stop do
-      run "RAILS_ENV=#{rails_env} /usr/share/where/bin/#{application} stop"
+      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} stop"
     end
 
     task :restart, :roles => :app, :except => { :no_release => true } do
-      run "RAILS_ENV=#{rails_env} /usr/share/where/bin/#{application} upgrade"
+      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} upgrade"
     end
 
     task :cold do
@@ -156,11 +155,6 @@ Capistrano::Configuration.instance(true).load do
       run "/usr/local/rvm/bin/rvm rvmrc trust #{release_path}"
     end
 
-    desc "Set RVM to trust the application's .rvmrc"
-    task :trust_rvmrc_current, :roles => :app  do
-      run "/usr/local/rvm/bin/rvm rvmrc trust #{shared_dir}"
-    end
-
     desc "Create the .rvmrc file for the project"
     task :create_rvmrc, :roles => :app  do
       run "cd #{release_path} && echo '#{rvm_ruby}@#{rvm_gemset}' > .rvmrc"
@@ -184,6 +178,8 @@ Capistrano::Configuration.instance(true).load do
   before "bundler:install", "bundler:setup"
 
   before "hoptoad:deploy", "deploy:setup_current_ref"
+
+  after "deploy:setup", "unicorn:create_symlink"
 
   after "deploy:update_code", "bundler:bundle_new_release"
   after "deploy:update_code", "deploy:copy_resque_configuration"
