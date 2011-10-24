@@ -7,9 +7,9 @@ Capistrano::Configuration.instance(true).load do
       run "echo RVM Installing #{rvm_ruby}; /usr/local/rvm/bin/rvm install #{rvm_ruby}  --with-openssl-dir=/usr/local/rvm/usr"
     end
 
-    task :init, :roles => :app  do
-      require 'rvm/capistrano'
+    task :s, :roles => :app  do
       run "echo Creating Gemset #{rvm_ruby}@#{rvm_gemset}; rvm use #{rvm_ruby}@#{rvm_gemset} --create"
+      require 'rvm/capistrano'
       set :rvm_ruby_string, "#{rvm_ruby}@#{rvm_gemset}"
     end
 
