@@ -55,4 +55,3 @@ production: &PROD
 debug:
   <<: *PROD
   env_name: web-dbg
-  verify_intent: false

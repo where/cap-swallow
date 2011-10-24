@@ -11,8 +11,6 @@ Capistrano::Configuration.instance(true).load do
   require 'swallow/hoptoad'
   require 'swallow/whenever_cron'
 
-  puts "Using Broken up swallow: Done"
-
   namespace :deploy do
     task :start do
       run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} start"
@@ -30,6 +28,19 @@ Capistrano::Configuration.instance(true).load do
       update
       migrate if uses_database
       start
+    end
+
+    task :migrate, :roles => :db, :only => { :primary => true } do
+      migrate_env = fetch(:migrate_env, "")
+      migrate_target = fetch(:migrate_target, :latest)
+
+      directory = case migrate_target.to_sym
+        when :current then current_path
+        when :latest  then latest_release
+        else raise ArgumentError, "unknown migration target #{migrate_target.inspect}"
+        end
+
+      run "cd #{directory} && source .rvmrc && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
     end
 
     task :setup_current_ref do
@@ -88,26 +99,24 @@ Capistrano::Configuration.instance(true).load do
   before "deploy:setup", "rvm:setup"
 
   before "deploy:update_code", "rvm:remove_rvmrc"
-  before "deploy:update_code", "rvm:init"
 
-  before "bundler:install", "rvm:create_rvmrc"  
-  before "bundler:install", "rvm:trust_rvmrc"
-  before "bundler:install", "bundler:setup"
-
-  before "hoptoad:deploy", "deploy:setup_current_ref"
+  before "deploy:symlink", "whenever_cron:deploy"
+  before "deploy:symlink", "deploy:setup_current_ref"
 
   after "deploy:setup", "unicorn:create_symlink"
 
+  after "deploy:update_code", "rvm:create_rvmrc"
+  after "deploy:update_code", "rvm:trust_rvmrc"
+  after "deploy:update_code", "rvm:init"
+  after "deploy:update_code", "bundler:setup"
   after "deploy:update_code", "bundler:bundle_new_release"
   after "deploy:update_code", "deploy:copy_resque_configuration"
   after "deploy:update_code", "assets:sync"
 
-  after "bundler:bundle_new_release", "whenever_cron:deploy"
-
   after "deploy:update", "newrelic:notice_deployment" if uses_newrelic
+  after "deploy:update", "hoptoad:notice_deployment" if uses_hoptoad
 
   after "deploy:restart", "deploy:cleanup"
-  after "deploy:restart", "hoptoad:deploy" if uses_hoptoad
 
   if uses_whenever_cron
     require "whenever/capistrano"
