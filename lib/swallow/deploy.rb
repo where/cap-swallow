@@ -162,7 +162,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Remove existing rvmrc from project if it exists"
     task :remove_rvmrc do
-      run "rm #{shared_path}/.rvmrc"
+      run "test -f #{shared_path}/.rvmrc && rm #{shared_path}/.rvmrc"
     end
   end
 
