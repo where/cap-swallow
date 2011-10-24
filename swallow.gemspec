@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "swallow"
-  s.version = "1.2.16"
+  s.version = "1.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Bob Breznak"]
@@ -26,8 +26,11 @@ Gem::Specification.new do |s|
     "VERSION",
     "config/deploy.yml",
     "lib/swallow.rb",
+    "lib/swallow/bundler.rb",
     "lib/swallow/common.rb",
     "lib/swallow/deploy.rb",
+    "lib/swallow/rvm.rb",
+    "lib/swallow/unicorn.rb",
     "lib/swallow/web.rb",
     "swallow.gemspec",
     "test/helper.rb",
