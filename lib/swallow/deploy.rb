@@ -5,10 +5,23 @@ Capistrano::Configuration.instance(true).load do
   require 'new_relic/recipes'
 
   namespace :deploy do
-    task :start do ; end
-    task :stop do  ; end
+    task :start do
+      run "echo Starting the Unicorn Herd!!"
+      run "RAILS_ENV=#{rails_env} /usr/share/where/bin/#{application} start"
+    end
+
+    task :stop do
+      run "RAILS_ENV=#{rails_env} /usr/share/where/bin/#{application} stop"
+    end
+
     task :restart, :roles => :app, :except => { :no_release => true } do
-      run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}"
+      run "RAILS_ENV=#{rails_env} /usr/share/where/bin/#{application} upgrade"
+    end
+
+    task :cold do
+      update
+      migrate if uses_database
+      start
     end
 
     task :setup_current_ref do
@@ -35,6 +48,7 @@ Capistrano::Configuration.instance(true).load do
     desc "Automatically called as apart of a standard deploy. Create a deploy.json tag in the public directory with information about the release."
     task :tag do
       setup_current_ref
+      #TODO: Don't use the user's version of ruby below
       tag = {:app => application, 
              :user => username,
              :deployed_at => Time.now,
@@ -53,15 +67,22 @@ Capistrano::Configuration.instance(true).load do
       end
     end
 
+    desc "Automatically called as apart of a standard deploy. Creates the socket tmp/sockets directory"
+    task :create_socket_dir, :roles => :app  do
+      run "mkdir #{release_path}/tmp/sockets"
+    end
+
+    after "deploy:finalize_update", "deploy:create_socket_dir"
     after "deploy:update_code", "deploy:copy_database_configuration"
     after "deploy:update_code", "deploy:copy_memcache_configuration"
     after "deploy:update_code", "deploy:tag"
   end
 
   namespace :bundler do
+
     desc "setup Bundler if it is not already setup"
-    task :setup_bundler, :roles => :app do
-      sudo "echo Installing Bundler; cd #{release_path} && sudo gem install bundler"
+    task :setup, :roles => :app do
+      run "echo Installing Bundler; cd #{release_path} && source .rvmrc && ruby -v && gem install bundler"
     end
 
     desc "Automatically called as apart of a standard deploy."
@@ -73,11 +94,11 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Automatically called as apart of a standard deploy."
     task :install, :roles => :app do
-      run "cd #{release_path} && sudo bundle install"
+      run "cd #{release_path} && source .rvmrc && bundle install"
 
       on_rollback do
         if previous_release
-          run "echo previous && cd #{previous_release} && sudo bundle install"
+          run "echo previous && cd #{previous_release} && source .rvmrc && bundle install"
         else
           logger.important "no previous release to rollback to, rollback of bundler:install skipped"
         end
@@ -104,16 +125,15 @@ Capistrano::Configuration.instance(true).load do
   desc "Automatically called as apart of a standard deploy, unless there is a `no_asset_id` configuration. Runs the rake task asset:id:upload."
   namespace :s3 do
     task :sync_assets, :roles => :db do
-      run "cd #{release_path} && rake asset:id:upload RAILS_ENV=#{rails_env}"
+      run "cd #{release_path} && source .rvmrc && rake asset:id:upload RAILS_ENV=#{rails_env}" if uses_asset_id
+      run "cd #{release_path} && source .rvmrc && RAILS_ENV=#{rails_env} bundle exec rake assets:precompile" if uses_asset_pipeline
     end
   end
 
   desc "Automatically called as apart of a standard deploy. Runs the hoptoad:deploy rake task to have hoptoad notified."
   namespace :hoptoad do
     task :deploy, :depends => 'deploy:setup_current_ref' do
-      unless no_hoptoad
-        run "cd #{release_path} && rake hoptoad:deploy TO=#{rails_env} REVISION=#{ref} USER=#{username} RAILS_ENV=#{rails_env}"
-      end
+      run "cd #{release_path} && source .rvmrc && rake hoptoad:deploy TO=#{rails_env} REVISION=#{ref} USER=#{username} RAILS_ENV=#{rails_env}"
     end
   end
 
@@ -121,37 +141,63 @@ Capistrano::Configuration.instance(true).load do
   namespace :rvm do
 
     desc "Setup the project based on the .rvmrc file"
-    task :setup do
-      run "echo 'RVM Installing #{rvm_ruby}'; rvm install #{rvm_ruby}"
+    task :setup, :roles => :app do
+      run "echo RVM Installing #{rvm_ruby}; /usr/local/rvm/bin/rvm install #{rvm_ruby}  --with-openssl-dir=/usr/local/rvm/usr"
+      run "echo Creating Gemset #{rvm_ruby}@#{application}; rvm use #{rvm_ruby}@#{application} --create"
+    end
+
+    task :init, :roles => :app  do
+      require 'rvm/capistrano'
+      set :rvm_ruby_string, "#{rvm_ruby}@#{application}"
     end
 
     desc "Set RVM to trust the application's .rvmrc"
-    task :trust_rvmrc do
-      run "rvm rvmrc trust #{release_path}"
+    task :trust_rvmrc, :roles => :app  do
+      run "/usr/local/rvm/bin/rvm rvmrc trust #{release_path}"
+    end
+
+    desc "Set RVM to trust the application's .rvmrc"
+    task :trust_rvmrc_current, :roles => :app  do
+      run "/usr/local/rvm/bin/rvm rvmrc trust #{shared_dir}"
+    end
+
+    desc "Create the .rvmrc file for the project"
+    task :create_rvmrc, :roles => :app  do
+      run "cd #{release_path} && echo '#{rvm_ruby}@#{rvm_gemset}' > .rvmrc"
     end
   end
 
+  desc "Unicorn related tasks"
+  namespace :unicorn do
+    desc "Creates a symlink to the unicorn management script"
+    task :create_symlink, :roles => :app do
+      run "ln -s /etc/init.d/unicorn #{shared_path}/system/#{appliction}"
+    end
+  end
+
+  before "deploy:update_code", "rvm:init"
+
   before "deploy:setup", "rvm:setup"
+  before "deploy:cold", "rvm:init"
+
+  before "bundler:install", "rvm:trust_rvmrc"
+  before "bundler:install", "bundler:setup"
 
   before "hoptoad:deploy", "deploy:setup_current_ref"
 
-  after "deploy:setup", "rvm:trust_rvmrc"
-  after "deploy:setup", "bundler:setup"
-
   after "deploy:update_code", "bundler:bundle_new_release"
   after "deploy:update_code", "deploy:copy_resque_configuration"
-
-  after "deploy", "rvm:trust_rvmrc"
+  after "deploy:update_code", "rvm:trust_rvmrc"
 
   after "bundler:bundle_new_release", "whenever_cron:deploy"
 
-  after "deploy:update", "newrelic:notice_deployment" unless no_newrelic
+  after "deploy:update", "newrelic:notice_deployment" if uses_newrelic
 
-  after "deploy:restart", "s3:sync_assets" if uses_assets
+  after "deploy:restart", "s3:sync_assets"
   after "deploy:restart", "deploy:cleanup"
-  after "deploy:restart", "hoptoad:deploy"
+  after "deploy:restart", "hoptoad:deploy" if uses_hoptoad
 
-  if uses_whenever_cron 
+  if uses_whenever_cron
     require "whenever/capistrano"
   end
 

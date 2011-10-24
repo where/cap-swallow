@@ -7,9 +7,16 @@ default: &DEFAULT
   scm: git
   uses_resque: false
   uses_whenever_cron: false
-  uses_assets: true
-  number_of_app_servers: 2
+  uses_newrelic: true
+  uses_hoptoad: true
+  uses_database: true
+  uses_asset_id: true
+  uses_asset_sync: false
+  servers: [app01, app02]
+  db_server: app01
+  cron_server: app01
   rvm_ruby: ruby-1.8.7-p334
+  rvm_gemset: global
 
 staging: 
   <<: *DEFAULT

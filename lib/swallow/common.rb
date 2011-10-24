@@ -76,18 +76,18 @@ Capistrano::Configuration.instance.load do
     :env_name, :rails_env, :default_env,
     :username, :uses_resque, :uses_whenever_cron,
     :branch, :copy_exclude, :use_sudo, :scm,
-    :uses_assets, :no_hoptoad, :no_newrelic,
-    :rvm_ruby, :number_of_app_servers].each do |key| 
+    :uses_assets, :uses_hoptoad, :uses_newrelic,
+    :uses_database, :uses_asset_id, :uses_asset_pipeline,
+    :rvm_ruby, :rvm_gemset, :servers, :db_server, :cron_server].each do |key| 
     set key, settings[key.to_s] # Settings uses string keys 
   end
 
-  # SERVER ROLES
-  server_names = (1..(number_of_app_servers||2)).to_a.collect do |n| 
-    "app#{('%02d' % n)}.#{env_name}"
+  server_names = servers.map do |n| 
+    "#{n}.#{env_name}"
   end
 
   send(:role, *[:web,  *server_names])
   send(:role, *[:app,  *server_names])
-  role :db,   "app01.#{env_name}", :primary => true     # This is where Rails migrations will run
-  role :cron, "app01.#{env_name}", :primary => true     # This is where cron jobs will be added
+  role :db,   "#{db_server}.#{env_name}", :primary => true     # This is where Rails migrations will run
+  role :cron, "#{cron_server}.#{env_name}", :primary => true     # This is where cron jobs will be added
 end
