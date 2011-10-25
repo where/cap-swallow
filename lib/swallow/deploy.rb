@@ -21,7 +21,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     task :restart, :roles => :app, :except => { :no_release => true } do
-      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} upgrade"
+      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} restart"
     end
 
     task :cold do
