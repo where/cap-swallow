@@ -4,7 +4,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Setup the project based on the .rvmrc file"
     task :setup, :roles => :app do
-      run "echo RVM Installing #{rvm_ruby}; /usr/local/rvm/bin/rvm install #{rvm_ruby}  --with-openssl-dir=/usr/local/rvm/usr --with-readline-dir=/usr/local/rvm/usr"
+      run "echo RVM Installing #{rvm_ruby}; /usr/local/rvm/bin/rvm install #{rvm_ruby}  --with-openssl-dir=/usr/local/rvm/usr"
     end
 
     task :init, :roles => :app  do
