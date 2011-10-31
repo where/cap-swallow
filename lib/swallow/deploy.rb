@@ -49,7 +49,6 @@ Capistrano::Configuration.instance(true).load do
         sha = d.strip
       end
       set :ref, sha
-      puts "Set Ref: #{sha}"
     end
 
     desc "Automatically called as apart of a standard deploy. Copies the database config from the shared directory over the one provided."
@@ -106,7 +105,7 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:setup", "unicorn:create_symlink"
 
   after "deploy:update_code", "rvm:create_rvmrc"
-  after "deploy:update_code", "rvm:trust_rvmrc"
+  after "deploy:update_code", "rvm:trust_rvmrc_release"
   after "deploy:update_code", "rvm:init"
   after "deploy:update_code", "bundler:setup"
   after "deploy:update_code", "bundler:bundle_new_release"
@@ -115,6 +114,8 @@ Capistrano::Configuration.instance(true).load do
 
   after "deploy:update", "newrelic:notice_deployment" if uses_newrelic
   after "deploy:update", "hoptoad:notice_deployment" if uses_hoptoad
+
+  after "deploy:finalize_update", "rvm:trust_rvmrc_current"
 
   after "deploy:restart", "deploy:cleanup"
 

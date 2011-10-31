@@ -13,9 +13,14 @@ Capistrano::Configuration.instance(true).load do
       set :rvm_ruby_string, "#{rvm_ruby}@#{rvm_gemset}"
     end
 
-    desc "Set RVM to trust the application's .rvmrc"
-    task :trust_rvmrc, :roles => :app  do
+    desc "Set RVM to trust the release application's .rvmrc"
+    task :trust_rvmrc_release, :roles => :app  do
       run "/usr/local/rvm/bin/rvm rvmrc trust #{release_path}"
+    end
+
+    desc "Set RVM to trust the current application's .rvmrc"
+    task :trust_rvmrc_current, :roles => :app do
+      run "/usr/local/rvm/bin/rvm rvmrc trust #{current_release}"
     end
 
     desc "Create the .rvmrc file for the project"
