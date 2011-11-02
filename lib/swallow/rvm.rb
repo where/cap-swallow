@@ -20,7 +20,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Set RVM to trust the current application's .rvmrc"
     task :trust_rvmrc_current, :roles => :app do
-      run "/usr/local/rvm/bin/rvm rvmrc trust #{current_release}"
+      run "/usr/local/rvm/bin/rvm rvmrc trust #{deploy_to}/current"
     end
 
     desc "Create the .rvmrc file for the project"
