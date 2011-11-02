@@ -28,11 +28,10 @@ staging2:
   env_name: web-stg2
   rails_env: staging2
 
-sandbox:
+rvm:
   <<: *DEFAULT
-  env_name: web-rvm
+  env_name: web-rvm-stg
   rails_env: staging
-  number_of_app_servers: 1
 
 demo:
   <<: *DEFAULT
