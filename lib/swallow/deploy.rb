@@ -115,7 +115,7 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:update", "newrelic:notice_deployment" if uses_newrelic
   after "deploy:update", "hoptoad:notice_deployment" if uses_hoptoad
 
-  after "deploy:finalize_update", "rvm:trust_rvmrc_current"
+  after "deploy:symlink", "rvm:trust_rvmrc_current"
 
   after "deploy:restart", "deploy:cleanup"
 
