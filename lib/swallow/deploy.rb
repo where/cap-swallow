@@ -89,7 +89,14 @@ Capistrano::Configuration.instance(true).load do
       run "mkdir #{release_path}/tmp/sockets"
     end
 
+    desc "Remove git files from deploy directory"
+    task :cleanup_git, :roles => :app do
+      run "rm -rf #{release_path}/.git*"
+    end
+
     after "deploy:finalize_update", "deploy:create_socket_dir"
+
+    after "deploy:update_code", "deploy:cleanup_git"
     after "deploy:update_code", "deploy:copy_database_configuration"
     after "deploy:update_code", "deploy:copy_memcache_configuration"
     after "deploy:update_code", "deploy:tag"

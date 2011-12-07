@@ -1,6 +1,9 @@
 default: &DEFAULT
   gateway_server: 'login.aws-est.where.com'
-  deploy_via: remote_cache
+  deploy_via: export
+  copy_cache: true
+  copy_exclude:
+    - .git*
   user: deploy
   default_branch: master
   use_sudo: false
@@ -33,6 +36,13 @@ rvm:
   env_name: web-rvm-stg
   rails_env: staging
 
+rvm-prod:
+  <<: *DEFAULT
+  env_name: web-rvm
+  rails_env: production
+  verify_intent: false
+
+
 demo:
   <<: *DEFAULT
   env_name: web-demo
@@ -48,8 +58,6 @@ production: &PROD
   env_name: web.ss
   rails_env: production
   verify_intent: false
-  copy_exclude:
-    - .git*
 
 debug:
   <<: *PROD
