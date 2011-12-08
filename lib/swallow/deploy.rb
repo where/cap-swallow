@@ -59,7 +59,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Automatically called as apart of a standard deploy. Copies the paypal config from the shared directory over the one provided."
     task :copy_paypal_configuration do
-      production_pp_config = '/usr/share/where/shared_config/paypal.yml'
+      production_paypal_config = '/usr/share/where/shared_config/paypal.yml'
       run "cp -p #{production_paypal_config} #{release_path}/config/paypal.yml"
     end
     
