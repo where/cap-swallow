@@ -76,7 +76,7 @@ Capistrano::Configuration.instance.load do
     :env_name, :rails_env, :default_env,
     :username, :uses_resque, :uses_whenever_cron,
     :branch, :copy_exclude, :use_sudo, :scm,
-    :uses_assets, :uses_hoptoad, :uses_newrelic,
+    :uses_assets, :uses_hoptoad, :uses_newrelic, :uses_paypal,
     :uses_database, :uses_asset_id, :uses_asset_pipeline,
     :rvm_ruby, :rvm_gemset, :servers, :db_server, :cron_server].each do |key| 
     set key, settings[key.to_s] # Settings uses string keys 

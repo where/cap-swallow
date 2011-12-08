@@ -57,6 +57,13 @@ Capistrano::Configuration.instance(true).load do
       run "cp -p #{production_db_config} #{release_path}/config/database.yml"
     end
 
+    desc "Automatically called as apart of a standard deploy. Copies the paypal config from the shared directory over the one provided."
+    task :copy_paypal_configuration do
+      production_pp_config = '/usr/share/where/shared_config/paypal.yml'
+      run "cp -p #{production_paypal_config} #{release_path}/config/paypal.yml"
+    end
+    
+
     desc "Automatically called as apart of a standard deploy. Copies the memcache config from the shared directory over the one provided."
     task :copy_memcache_configuration do
       production_mc_config = '/usr/share/where/shared_config/memcache.yml'
@@ -99,6 +106,7 @@ Capistrano::Configuration.instance(true).load do
     after "deploy:update_code", "deploy:cleanup_git"
     after "deploy:update_code", "deploy:copy_database_configuration"
     after "deploy:update_code", "deploy:copy_memcache_configuration"
+    after "deploy:update_code", "deploy:copy_paypal_configuration" if uses_paypal
     after "deploy:update_code", "deploy:tag"
   end
 

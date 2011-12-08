@@ -15,6 +15,7 @@ default: &DEFAULT
   uses_database: true
   uses_asset_id: true
   uses_asset_sync: false
+  uses_paypal: false
   servers: [app01, app02]
   db_server: app01
   cron_server: app01
@@ -42,6 +43,11 @@ rvm-prod:
   rails_env: production
   verify_intent: false
 
+cumbie:
+  <<: *DEFAULT
+  env_name: rec
+  rails_env: production
+  verify_intent: false
 
 demo:
   <<: *DEFAULT
