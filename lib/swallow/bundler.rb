@@ -19,7 +19,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Automatically called as apart of a standard deploy."
     task :install, :roles => :app do
-      run "cd #{release_path} && source .rvmrc && bundle install RAILS_ENV=#{rails_env}"
+      run "cd #{release_path} && source .rvmrc && bundle install --path RAILS_ENV=#{rails_env}"
 
       on_rollback do
         if previous_release

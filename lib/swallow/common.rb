@@ -73,7 +73,7 @@ Capistrano::Configuration.instance.load do
   # yes we could do ruby coolness, but this seems safer
   [:application, :repository, :gateway,
     :deploy_to, :deploy_via, :user,
-    :env_name, :rails_env, :default_env,
+    :env_name, :rails_env, :default_env, :webserver,
     :username, :uses_resque, :uses_whenever_cron,
     :branch, :copy_exclude, :use_sudo, :scm,
     :uses_assets, :uses_hoptoad, :uses_newrelic, :uses_paypal,
