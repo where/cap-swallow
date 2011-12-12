@@ -7,5 +7,8 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
+  after "deploy:update", "hoptoad:notice_deployment" if use_hoptoad
+
 end
+
 

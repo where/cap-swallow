@@ -6,4 +6,7 @@ Capistrano::Configuration.instance(true).load do
       run "ln -s /etc/init.d/unicorn #{shared_path}/system/#{application}"
     end
   end
+
+  after "deploy:setup", "unicorn:create_symlink"
+
 end

@@ -36,4 +36,8 @@ Capistrano::Configuration.instance(true).load do
       bundler.install
     end
   end
+
+  after "deploy:update_code", "bundler:setup"
+  after "deploy:update_code", "bundler:bundle_new_release"
 end
+

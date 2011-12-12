@@ -11,6 +11,9 @@ Capistrano::Configuration.instance(true).load do
   require 'swallow/hoptoad'
   require 'swallow/whenever_cron'
 
+  require 'whenever/capistrano' if use_whenever_cron
+
+
   namespace :deploy do
     task :start do
       run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} start"
@@ -26,7 +29,7 @@ Capistrano::Configuration.instance(true).load do
 
     task :cold do
       update
-      migrate if uses_database
+      migrate if use_database
       start
     end
 
@@ -82,9 +85,9 @@ Capistrano::Configuration.instance(true).load do
       run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
     end
 
-    desc "Automaticall called as apart of a standard deploy. Copies the shared resque config to the application if there is a `uses_resque` configuration"
+    desc "Automaticall called as apart of a standard deploy. Copies the shared resque config to the application if there is a `use_resque` configuration"
     task :copy_resque_configuration do
-      if uses_resque
+      if use_resque
         resque_config = "/usr/share/where/shared_config/#{application}.resque.yml"
         run "cp -p #{resque_config} #{release_path}/config/resque.yml"
       end
@@ -105,36 +108,9 @@ Capistrano::Configuration.instance(true).load do
     after "deploy:update_code", "deploy:cleanup_git"
     after "deploy:update_code", "deploy:copy_database_configuration"
     after "deploy:update_code", "deploy:copy_memcache_configuration"
-    after "deploy:update_code", "deploy:copy_paypal_configuration" if uses_paypal
+    after "deploy:update_code", "deploy:copy_paypal_configuration" if use_paypal
     after "deploy:update_code", "deploy:tag"
   end
 
-  before "deploy:setup", "rvm:setup"
-
-  before "deploy:update_code", "rvm:remove_rvmrc"
-
-  before "deploy:symlink", "whenever_cron:deploy"
-  before "deploy:symlink", "deploy:setup_current_ref"
-
-  after "deploy:setup", "unicorn:create_symlink"
-
-  after "deploy:update_code", "rvm:create_rvmrc"
-  after "deploy:update_code", "rvm:trust_rvmrc_release"
-  after "deploy:update_code", "rvm:init"
-  after "deploy:update_code", "bundler:setup"
-  after "deploy:update_code", "bundler:bundle_new_release"
-  after "deploy:update_code", "deploy:copy_resque_configuration"
-  after "deploy:update_code", "assets:sync"
-
-  after "deploy:update", "newrelic:notice_deployment" if uses_newrelic
-  after "deploy:update", "hoptoad:notice_deployment" if uses_hoptoad
-
-  after "deploy:symlink", "rvm:trust_rvmrc_current"
-
-  after "deploy:restart", "deploy:cleanup"
-
-  if uses_whenever_cron
-    require "whenever/capistrano"
-  end
-
+  after "deploy:update", "newrelic:notice_deployment" if use_newrelic
 end

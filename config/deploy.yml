@@ -6,22 +6,21 @@ default: &DEFAULT
     - .git*
   user: deploy
   default_branch: master
-  use_sudo: false
   scm: git
-  uses_resque: false
-  uses_whenever_cron: false
-  uses_newrelic: true
-  uses_hoptoad: true
-  uses_database: true
-  uses_asset_id: true
-  uses_asset_sync: false
-  uses_paypal: false
+  use_newrelic: true
+  use_hoptoad: true
+  use_database: true
+  use_sudo: false
+  use_resque: false
+  use_whenever_cron: false
+  use_paypal: false
+  use_asset_sync: true
   servers: [app01, app02]
   db_server: app01
   cron_server: app01
-  rvm_ruby: ruby-1.8.7-p334
+  rvm_ruby: jruby-1.6.5
   rvm_gemset: global
-  webserver: unicorn
+  verify_intent: false
 
 staging: 
   <<: *DEFAULT
@@ -42,13 +41,12 @@ rvm-prod:
   <<: *DEFAULT
   env_name: web-rvm
   rails_env: production
-  verify_intent: false
+  verify_intent: true
 
 cumbie:
   <<: *DEFAULT
   env_name: rec
   rails_env: production
-  verify_intent: false
 
 demo:
   <<: *DEFAULT
@@ -64,7 +62,7 @@ production: &PROD
   <<: *DEFAULT
   env_name: web.ss
   rails_env: production
-  verify_intent: false
+  verify_intent: true
 
 debug:
   <<: *PROD

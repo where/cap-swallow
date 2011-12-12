@@ -4,11 +4,32 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Setup the project based on the .rvmrc file"
     task :setup, :roles => :app do
-      run "echo RVM Installing #{rvm_ruby}; /usr/local/rvm/bin/rvm install #{rvm_ruby}  --with-openssl-dir=/usr/local/rvm/usr"
+      rubies = {}
+      puts "Looking for #{rvm_ruby}"
+      run "/usr/local/rvm/bin/rvm list" do |chan, stream, data|
+        host = chan[:host].to_sym
+
+        puts "[#{host}] - #{data}"
+
+        if data.match("\s#{rvm_ruby}\s")
+          puts "Found #{rvm_ruby} on #{host}"
+          rubies[host] = true
+        elsif !rubies.has_key? host
+          puts "First response not find on #{host}"
+          rubies[host] = false
+        else
+          puts "Not Found on #{host}"
+        end
+      end
+
+      puts "Rubies: #{rubies.inspect}"
+
+      #run "/usr/local/rvm/bin/rvm install #{rvm_ruby}"
     end
 
     task :init, :roles => :app  do
-      run "echo Creating Gemset #{rvm_ruby}@#{rvm_gemset}; rvm use #{rvm_ruby}@#{rvm_gemset} --create"
+      run "rvm use #{rvm_ruby}@#{rvm_gemset} --create"
+
       require 'rvm/capistrano'
       set :rvm_ruby_string, "#{rvm_ruby}@#{rvm_gemset}"
     end
@@ -33,6 +54,16 @@ Capistrano::Configuration.instance(true).load do
       run "test -f #{shared_path}/cached-copy/.rvmrc && rm #{shared_path}/cached-copy/.rvmrc || true"
     end
   end
+
+  before "deploy:setup", "rvm:setup"
+
+  before "deploy:update_code", "rvm:remove_rvmrc"
+
+  after "deploy:update_code", "rvm:create_rvmrc"
+  after "deploy:update_code", "rvm:trust_rvmrc_release"
+  after "deploy:update_code", "rvm:init"
+
+  after "deploy:symlink", "rvm:trust_rvmrc_current"
 
 end
 

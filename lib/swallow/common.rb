@@ -13,6 +13,10 @@ Capistrano::Configuration.instance.load do
     set var, default if eval("#{var.to_s}.empty?")
   end
 
+  def rvm_run(command)
+    run "cd #{release_path} && source .rvmrc && #{command}"
+  end
+
   _cset(:application_config) { "#{Dir.pwd}/config/deploy.yml" }
 
   # Load settings from yaml
@@ -43,11 +47,6 @@ Capistrano::Configuration.instance.load do
     exit 1
   end
 
-  # Ensure Symbol Values
-  ['scm', 'deploy_via'].each do |key|
-    settings.merge!(key.to_s => settings[key.to_s].to_sym)
-  end
-
   # branch / tag override
   branch = ENV['r']
   branch = settings['default_branch'] if branch == nil
@@ -56,32 +55,20 @@ Capistrano::Configuration.instance.load do
   # Set gateway
   settings.merge!('gateway' => "#{ENV['USER']}@#{settings['gateway_server']}")
 
-  # TODO: Make this optional/in a common file for unsafe actions
-  # Verify intent to deploy
-  if settings['verify_intent']
-    puts 'Cmaaan....really?'
-    puts "Deploy #{settings["branch"]} to #{env}?"
-    prompt_with_default :confirm, 'kidding'
-    unless confirm == 'yes, really'
-      puts 'canceling deploy'
-      exit 0
-    end
-  end
-
+  # Set username (the actual username that is logged into the gateway, not the user on the box)
   settings['username'] = settings['gateway'].split('@')[0] rescue ''
 
-  # yes we could do ruby coolness, but this seems safer
-  [:application, :repository, :gateway,
-    :deploy_to, :deploy_via, :user,
-    :env_name, :rails_env, :default_env, :webserver,
-    :username, :uses_resque, :uses_whenever_cron,
-    :branch, :copy_exclude, :use_sudo, :scm,
-    :uses_assets, :uses_hoptoad, :uses_newrelic, :uses_paypal,
-    :uses_database, :uses_asset_id, :uses_asset_sync,
-    :rvm_ruby, :rvm_gemset, :servers, :db_server, :cron_server].each do |key| 
-    set key, settings[key.to_s] # Settings uses string keys 
+  # Ensure Symbol Values
+  ['scm', 'deploy_via'].each do |key|
+    settings.merge!(key.to_s => settings[key.to_s].to_sym)
   end
 
+  # Set all settings as cap configs
+  settings.each do |s|
+    set s[0].to_sym, s[1]
+  end
+
+  # Generate all of the web and app server names
   server_names = servers.map do |n| 
     "#{n}.#{env_name}"
   end
@@ -91,3 +78,4 @@ Capistrano::Configuration.instance.load do
   role :db,   "#{db_server}.#{env_name}", :primary => true     # This is where Rails migrations will run
   role :cron, "#{cron_server}.#{env_name}", :primary => true     # This is where cron jobs will be added
 end
+
