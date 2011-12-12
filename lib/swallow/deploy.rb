@@ -62,7 +62,6 @@ Capistrano::Configuration.instance(true).load do
       production_paypal_config = '/usr/share/where/shared_config/paypal.yml'
       run "cp -p #{production_paypal_config} #{release_path}/config/paypal.yml"
     end
-    
 
     desc "Automatically called as apart of a standard deploy. Copies the memcache config from the shared directory over the one provided."
     task :copy_memcache_configuration do
