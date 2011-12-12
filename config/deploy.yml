@@ -18,52 +18,18 @@ default: &DEFAULT
   servers: [app01, app02]
   db_server: app01
   cron_server: app01
-  rvm_ruby: jruby-1.6.5
+  rvm_ruby: ruby-1.9.3-p0
   rvm_gemset: global
   verify_intent: false
 
-staging: 
+staging:
   <<: *DEFAULT
-  env_name: web-stg
+  env_name: cm-stg.ts
   rails_env: staging
 
-staging2: 
+production:
   <<: *DEFAULT
-  env_name: web-stg2
-  rails_env: staging2
-
-rvm:
-  <<: *DEFAULT
-  env_name: web-rvm-stg
-  rails_env: staging
-
-rvm-prod:
-  <<: *DEFAULT
-  env_name: web-rvm
+  env_name: cm.ts
   rails_env: production
   verify_intent: true
 
-cumbie:
-  <<: *DEFAULT
-  env_name: rec
-  rails_env: production
-
-demo:
-  <<: *DEFAULT
-  env_name: web-demo
-  rails_env: demo
-
-mobile: 
-  <<: *DEFAULT
-  env_name: web-touch-stg
-  rails_env: staging
-
-production: &PROD
-  <<: *DEFAULT
-  env_name: web.ss
-  rails_env: production
-  verify_intent: true
-
-debug:
-  <<: *PROD
-  env_name: web-dbg
