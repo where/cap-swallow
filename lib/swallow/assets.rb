@@ -4,7 +4,7 @@ Capistrano::Configuration.instance(true).load do
   namespace :assets do
     task :sync, :roles => :app do
       run "cd #{release_path} && source .rvmrc && RAILS_ENV=#{rails_env} rake asset:id:upload" if uses_asset_id
-      run "cd #{release_path} && source .rvmrc && RAILS_ENV=#{rails_env} rake assets:precompile" if uses_asset_sync
+      run "cd #{release_path} && source .rvmrc && RAILS_ENV=#{rails_env} bundle exec rake assets:precompile" if uses_asset_sync
     end
   end
 
