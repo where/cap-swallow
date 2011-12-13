@@ -1,3 +1,5 @@
+require 'rvm/capistrano'
+
 Capistrano::Configuration.instance(true).load do
   desc "RVM related commands"
   namespace :rvm do
@@ -29,10 +31,21 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Check and install the project's version of ruby (based on rvm_ruby) if its not already installed."
     task :setup do
+      # determine if each host has the proper ruby installed
       rubies = get_rubies(rvm_ruby)
-      apps = self.roles[:app].to_ary
-      apps.each_with_index do |host, i|
-        if !rubies[host.to_s.to_sym]
+      skipped_rubies = rubies.clone
+
+      # print out the skipped hosts, if any
+      skipped_rubies.delete_if {|key, value| !value}
+      skipped_rubies.each do |key|
+        puts "  - [#{key}] #{rvm_ruby} already installed. Skipping."
+      end
+
+      # install on the hosts without the proper ruby, if any
+      rubies.delete_if{|key, val| val}
+      if rubies.count > 0
+        apps = self.roles[:app].to_ary
+        apps.each_with_index do |host, i|
           first_line = true
           run "/usr/local/rvm/bin/rvm install #{rvm_ruby} --with-openssl-dir=/usr/local/rvm/usr" do |chan, stream, data|
             if first_line
@@ -41,16 +54,15 @@ Capistrano::Configuration.instance(true).load do
             end
             print '.'
           end
-        else
-          puts "  - [#{host}] #{rvm_ruby} already installed. Skipping."
         end
       end
 
-      rubies.delete_if {|key, value| value}
+      # check that ruby was properly installed, if any installs were required
       if rubies.count > 0
         rubies = get_rubies(rvm_ruby).delete_if {|key, value| value}
       end
 
+      # bail if there was an issue
       if rubies.count > 0
         puts "!!! Could not install the project's necessary ruby. Stopping deploy."
         exit 0
@@ -59,9 +71,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     task :set_gemset, :roles => :app  do
-      run "rvm use #{rvm_ruby}@#{rvm_gemset} --create"
-
-      require 'rvm/capistrano'
+      run "/usr/local/rvm/bin/rvm use #{rvm_ruby}@#{rvm_gemset} --create"
       set :rvm_ruby_string, "#{rvm_ruby}@#{rvm_gemset}"
     end
 
@@ -77,7 +87,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Create the .rvmrc file for the project"
     task :create_rvmrc, :roles => :app  do
-      run "cd #{release_path} && rvm use #{rvm_ruby}@#{rvm_gemset} --rvmrc"
+      run "cd #{release_path} && /usr/local/rvm/bin/rvm use #{rvm_ruby}@#{rvm_gemset} --rvmrc"
     end
 
     desc "Remove existing rvmrc from project if it exists"
@@ -90,9 +100,9 @@ Capistrano::Configuration.instance(true).load do
 
   before "deploy:update_code", "rvm:remove_rvmrc"
 
-  after "deploy:update_code", "rvm:create_rvmrc"
-  after "deploy:update_code", "rvm:trust_rvmrc_release"
-  after "deploy:update_code", "rvm:set_gemset"
+  after "deploy:finalize_update", "rvm:create_rvmrc"
+  after "deploy:finalize_update", "rvm:trust_rvmrc_release"
+  after "deploy:finalize_update", "rvm:set_gemset"
 
   after "deploy:symlink", "rvm:trust_rvmrc_current"
 

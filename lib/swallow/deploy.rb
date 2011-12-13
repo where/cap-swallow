@@ -4,10 +4,10 @@ Capistrano::Configuration.instance(true).load do
   require 'json'
   require 'new_relic/recipes'
 
-  require 'swallow/bundler'
-  require 'swallow/unicorn'
   require 'swallow/rvm'
+  require 'swallow/bundler'
   require 'swallow/assets'
+  require 'swallow/unicorn'
   require 'swallow/hoptoad'
   require 'swallow/whenever_cron'
 
@@ -15,15 +15,21 @@ Capistrano::Configuration.instance(true).load do
 
   namespace :deploy do
     task :start do
-      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} start"
+      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} start" do
+
+      end
     end
 
     task :stop do
-      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} stop"
+      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} stop" do
+
+      end
     end
 
     task :restart, :roles => :app, :except => { :no_release => true } do
-      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} restart"
+      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} restart" do
+
+      end
     end
 
     task :cold do

@@ -9,6 +9,6 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
-  after "deploy:update_code", "assets:sync"
+  before "deploy:symlink", "assets:sync"
 end
 

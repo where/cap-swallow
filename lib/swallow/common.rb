@@ -75,7 +75,11 @@ Capistrano::Configuration.instance.load do
 
   send(:role, *[:web,  *server_names])
   send(:role, *[:app,  *server_names])
-  role :db,   "#{db_server}.#{env_name}", :primary => true     # This is where Rails migrations will run
-  role :cron, "#{cron_server}.#{env_name}", :primary => true     # This is where cron jobs will be added
+
+  # migrations will run if use_database is enabled
+  role :db,   "#{db_server}.#{env_name}", no_release: !use_database, primary: true
+
+  # where cron jobs will be added
+  role :cron, "#{cron_server}.#{env_name}", primary: true
 end
 

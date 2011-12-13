@@ -15,6 +15,7 @@ default: &DEFAULT
   use_whenever_cron: false
   use_paypal: false
   use_asset_sync: true
+  use_asset_id: false
   servers: [app01, app02]
   db_server: app01
   cron_server: app01

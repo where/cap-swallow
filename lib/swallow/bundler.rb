@@ -1,12 +1,29 @@
 Capistrano::Configuration.instance(true).load do
   namespace :bundler do
 
+    def get_hosts_with_bundle
+      hosts = {}
+      run "cd #{release_path} && source .rvmrc && gem list | grep bundler" do |chan, stream, data|
+        host = chan[:host].to_sym
+        if data.match("\s*bundler\s+")
+          hosts[host] = true
+        elsif !rubies.has_key? host
+          hosts[host] = false
+        end
+      end
+      hosts
+    end
+
     desc "setup Bundler if it is not already setup"
-    task :setup, :roles => :app do
-      begin
-        run " cd #{release_path} && source .rvmrc && bundler list"
-      rescue Exception => e
-        run "echo Installing Bundler; cd #{release_path} && source .rvmrc && gem install bundler"
+    task :setup do
+      hosts = get_hosts_with_bundle
+
+      hosts.delete_if{|key, val| val}
+      if hosts.count > 0
+        apps = self.roles[:app].to_ary
+        apps.each_with_index do |host, i|
+          run "cd #{release_path} && source .rvmrc && gem install bundler"
+        end
       end
     end
 
@@ -19,7 +36,11 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Automatically called as apart of a standard deploy."
     task :install, :roles => :app do
-      run "cd #{release_path} && source .rvmrc && bundle install --path RAILS_ENV=#{rails_env}"
+      run "cd #{release_path} && source .rvmrc && bundle install --path RAILS_ENV=#{rails_env}" do |chan, stream, data|
+        puts "  * [#{chan[:host]}] #{data}" if data.match(/^Installing/)
+        puts "  * [#{chan[:host]}] #{data}" if data.match(/^Updating/)
+        puts "  * [#{chan[:host]}] #{data}" if data.match(/^WARNING/)
+      end
 
       on_rollback do
         if previous_release
