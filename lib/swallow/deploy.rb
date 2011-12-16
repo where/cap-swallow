@@ -8,7 +8,7 @@ Capistrano::Configuration.instance(true).load do
   require 'swallow/bundler'
   require 'swallow/assets'
   require 'swallow/unicorn'
-  require 'swallow/hoptoad'
+  require 'swallow/airbrake'
   require 'swallow/whenever_cron'
 
   require 'whenever/capistrano' if use_whenever_cron

@@ -8,7 +8,7 @@ default: &DEFAULT
   default_branch: master
   scm: git
   use_newrelic: true
-  use_hoptoad: true
+  use_airbrake: true
   use_database: true
   use_sudo: false
   use_resque: false
