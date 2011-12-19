@@ -115,6 +115,9 @@ Capistrano::Configuration.instance(true).load do
     after "deploy:update_code", "deploy:copy_memcache_configuration"
     after "deploy:update_code", "deploy:copy_paypal_configuration" if use_paypal
     after "deploy:update_code", "deploy:tag"
+
+    after "deploy", "deploy:cleanup"
+
   end
 
   after "deploy:update", "newrelic:notice_deployment" if use_newrelic
