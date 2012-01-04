@@ -84,7 +84,8 @@ Capistrano::Configuration.instance(true).load do
              :user => username,
              :deployed_at => Time.now,
              :branch => branch,
-             :ruby => capture('ruby -v'),
+             :ruby => capture("cd #{release_path} && source .rvmrc && ruby -v"),
+             :rvm => capture("cd #{release_path} && source .rvmrc && rvm-prompt i v p g"),
              :ref => ref }
 
       run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
