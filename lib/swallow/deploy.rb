@@ -108,6 +108,35 @@ Capistrano::Configuration.instance(true).load do
       run "rm -rf #{release_path}/.git*"
     end
 
+    desc "Prevent users from stomping on each other"
+    task :prevent_stomp do
+      resp = {}
+      run "cat #{deploy_to + "/" + current_dir + "/public/deploy.json"}" do |chan, stream, data|
+        host = chan[:host].to_sym
+        resp[host] = resp[host].to_s + data
+      end
+
+      user = nil
+      resp.each_pair do |k, v|
+        existing_user = JSON.parse(v)["user"]
+        if username != existing_user
+          user = existing_user
+          break
+        end
+      end
+
+      if user
+        puts "Oh No! #{user} beat you to the punch! Did you ask if you could deploy?"
+        prompt_with_default :confirm, 'Nope!', ['Nope!', 'Yep']
+        if confirm.upcase != 'YEP'
+          puts "Exiting deploy. Please lie to me next time or actually talk to the guy."
+          exit
+        end
+      end
+    end
+
+    before "deploy:update_code", "deploy:prevent_stomp"
+
     after "deploy:finalize_update", "deploy:create_socket_dir"
 
     after "deploy:update_code", "deploy:cleanup_git"
