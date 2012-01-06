@@ -11,8 +11,6 @@ Capistrano::Configuration.instance(true).load do
   require 'swallow/airbrake'
   require 'swallow/whenever_cron'
 
-  require 'whenever/capistrano' if use_whenever_cron
-
   namespace :deploy do
     task :start do
       run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} start" do
