@@ -3,7 +3,7 @@ Capistrano::Configuration.instance(true).load do
 
     def get_hosts_with_bundle
       hosts = {}
-      run "cd #{release_path} && source .rvmrc && gem list | grep bundler" do |chan, stream, data|
+      run "#{source_rvmrc} && gem list | grep bundler" do |chan, stream, data|
         host = chan[:host].to_sym
         if data.match("\s*bundler\s+")
           hosts[host] = true
@@ -25,7 +25,7 @@ Capistrano::Configuration.instance(true).load do
         if hosts.count > 0
           apps = self.roles[:app].to_ary
           apps.each_with_index do |host, i|
-            run "cd #{release_path} && source .rvmrc && gem install bundler"
+            run "#{source_rvmrc} && gem install bundler"
           end
         end
       end
@@ -48,7 +48,7 @@ Capistrano::Configuration.instance(true).load do
 
       on_rollback do
         if previous_release
-          run "echo previous && cd #{previous_release} && source .rvmrc && bundle install"
+          run "echo previous && #{source_rvmrc previous_release} && bundle install"
         else
           logger.important "no previous release to rollback to, rollback of bundler:install skipped"
         end

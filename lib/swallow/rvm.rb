@@ -1,8 +1,8 @@
 Capistrano::Configuration.instance(true).load do
   require 'rvm/capistrano' if use_rvm
 
-  def source_rvmrc
-    "cd #{release_path} #{use_rvm ? " && source .rvmrc " : ""}"
+  def source_rvmrc(location=nil)
+    "cd #{location.nil? ? release_path : location} #{use_rvm ? " && source .rvmrc " : ""}"
   end
 
   desc "RVM related commands"
