@@ -1,6 +1,10 @@
-require 'rvm/capistrano'
-
 Capistrano::Configuration.instance(true).load do
+  require 'rvm/capistrano' if use_rvm
+
+  def source_rvmrc
+    "cd #{release_path} #{use_rvm ? " && source .rvmrc " : ""}"
+  end
+
   desc "RVM related commands"
   namespace :rvm do
 
@@ -19,13 +23,17 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Initial rvm setup for a completely fresh server"
     task :init do
-      first_line = true
-      run "/usr/local/rvm/bin/rvm pkg install openssl" do |chan, stream, data|
-        if first_line
-          print "  * [#{host}] Installing openssl pkg "
-          first_line = false
+      if !use_rvm
+        puts "  * Server does not use RVM. Skipping..."
+      else
+        first_line = true
+        run "/usr/local/rvm/bin/rvm pkg install openssl" do |chan, stream, data|
+          if first_line
+            print "  * [#{host}] Installing openssl pkg "
+            first_line = false
+          end
+          print '.'
         end
-        print '.'
       end
     end
 
@@ -67,7 +75,6 @@ Capistrano::Configuration.instance(true).load do
         puts "!!! Could not install the project's necessary ruby. Stopping deploy."
         exit 0
       end
-
     end
 
     task :set_gemset, :roles => :app  do
@@ -87,7 +94,12 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Create the .rvmrc file for the project"
     task :create_rvmrc, :roles => :app  do
-      run "cd #{release_path} && /usr/local/rvm/bin/rvm use #{rvm_ruby}@#{rvm_gemset} --rvmrc"
+      if !use_rvm
+        puts "  * Server does not use RVM. Creating dummy .rvmrc"
+        run "echo '' > #{release_path}/.rvmrc"
+      else
+        run "cd #{release_path} && /usr/local/rvm/bin/rvm use #{rvm_ruby}@#{rvm_gemset} --rvmrc"
+      end
     end
 
     desc "Remove existing rvmrc from project if it exists"
@@ -98,13 +110,13 @@ Capistrano::Configuration.instance(true).load do
 
   before "deploy:setup", "rvm:setup"
 
-  before "deploy:update_code", "rvm:remove_rvmrc"
+  before "deploy:update_code", "rvm:remove_rvmrc" if use_rvm
 
   after "deploy:finalize_update", "rvm:create_rvmrc"
-  after "deploy:finalize_update", "rvm:trust_rvmrc_release"
-  after "deploy:finalize_update", "rvm:set_gemset"
+  after "deploy:finalize_update", "rvm:trust_rvmrc_release" if use_rvm
+  after "deploy:finalize_update", "rvm:set_gemset" if use_rvm
 
-  after "deploy:symlink", "rvm:trust_rvmrc_current"
+  after "deploy:symlink", "rvm:trust_rvmrc_current" if use_rvm
 
 end
 

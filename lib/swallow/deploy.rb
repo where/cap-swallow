@@ -5,7 +5,7 @@ Capistrano::Configuration.instance(true).load do
   require 'new_relic/recipes'
 
   require 'swallow/rvm'
-  require 'swallow/bundler'
+  #require 'swallow/bundler'
   require 'swallow/assets'
   require 'swallow/unicorn'
   require 'swallow/airbrake'
@@ -13,21 +13,26 @@ Capistrano::Configuration.instance(true).load do
 
   namespace :deploy do
     task :start do
-      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} start" do
-
+      if use_unicorn
+        run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} start" do
+        end
       end
     end
 
     task :stop do
-      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} stop" do
-
+      if use_unicorn
+        run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} stop" do
+        end
       end
     end
 
     task :restart, :roles => :app, :except => { :no_release => true } do
-      run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} restart" do
-
+      if use_unicorn
+        run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} restart" do
+        end
       end
+
+      run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}" if use_passenger
     end
 
     task :cold do
@@ -46,7 +51,7 @@ Capistrano::Configuration.instance(true).load do
         else raise ArgumentError, "unknown migration target #{migrate_target.inspect}"
         end
 
-      run "cd #{directory} && source .rvmrc && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
+      run "#{source_rvmrc} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
     end
 
     task :setup_current_ref do
@@ -82,8 +87,8 @@ Capistrano::Configuration.instance(true).load do
              :user => username,
              :deployed_at => Time.now,
              :branch => branch,
-             :ruby => capture("cd #{release_path} && source .rvmrc && ruby -v"),
-             :rvm => capture("cd #{release_path} && source .rvmrc && rvm-prompt i v p g"),
+             :ruby => capture("#{source_rvmrc} && ruby -v"),
+             :rvm => use_rvm ? capture("#{source_rvmrc} && rvm-prompt i v p g") : 'N/A',
              :ref => ref }
 
       run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
@@ -95,11 +100,6 @@ Capistrano::Configuration.instance(true).load do
         resque_config = "/usr/share/where/shared_config/#{application}.resque.yml"
         run "cp -p #{resque_config} #{release_path}/config/resque.yml"
       end
-    end
-
-    desc "Automatically called as apart of a standard deploy. Creates the socket tmp/sockets directory"
-    task :create_socket_dir, :roles => :app  do
-      run "mkdir #{release_path}/tmp/sockets"
     end
 
     desc "Remove git files from deploy directory"
@@ -117,7 +117,8 @@ Capistrano::Configuration.instance(true).load do
 
       user = nil
       resp.each_pair do |k, v|
-        existing_user = JSON.parse(v)["user"]
+        v.strip!
+        existing_user = JSON.parse(v)["user"] rescue nil
         if username != existing_user
           user = existing_user
           break
@@ -136,8 +137,6 @@ Capistrano::Configuration.instance(true).load do
 
     before "deploy:update_code", "deploy:prevent_stomp"
 
-    after "deploy:finalize_update", "deploy:create_socket_dir"
-
     after "deploy:update_code", "deploy:cleanup_git"
     after "deploy:update_code", "deploy:copy_database_configuration"
     after "deploy:update_code", "deploy:copy_memcache_configuration"
@@ -150,3 +149,4 @@ Capistrano::Configuration.instance(true).load do
 
   after "deploy:update", "newrelic:notice_deployment" if use_newrelic
 end
+

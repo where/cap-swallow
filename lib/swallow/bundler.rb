@@ -16,27 +16,31 @@ Capistrano::Configuration.instance(true).load do
 
     desc "setup Bundler if it is not already setup"
     task :setup do
-      hosts = get_hosts_with_bundle
+      if !use_rvm
+        puts "  * Server does not use RVM. Skipping..."
+      else
+        hosts = get_hosts_with_bundle
 
-      hosts.delete_if{|key, val| val}
-      if hosts.count > 0
-        apps = self.roles[:app].to_ary
-        apps.each_with_index do |host, i|
-          run "cd #{release_path} && source .rvmrc && gem install bundler"
+        hosts.delete_if{|key, val| val}
+        if hosts.count > 0
+          apps = self.roles[:app].to_ary
+          apps.each_with_index do |host, i|
+            run "cd #{release_path} && source .rvmrc && gem install bundler"
+          end
         end
       end
     end
 
     desc "Automatically called as apart of a standard deploy."
-    task :create_symlink, :roles => :app do
+    task :create_symlink do
       shared_dir = File.join(shared_path, 'bundle')
       release_dir = File.join(release_path, '.bundle')
       run("mkdir -p #{shared_dir} && ln -s #{shared_dir} #{release_dir}")
     end
 
     desc "Automatically called as apart of a standard deploy."
-    task :install, :roles => :app do
-      run "cd #{release_path} && source .rvmrc && bundle install --path RAILS_ENV=#{rails_env}" do |chan, stream, data|
+    task :install do
+      run "#{source_rvmrc} && bundle install --path RAILS_ENV=#{rails_env}" do |chan, stream, data|
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^Installing/)
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^Updating/)
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^WARNING/)
@@ -52,7 +56,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     desc "Automatically called as apart of a standard deploy."
-    task :bundle_new_release, :roles => :db do
+    task :bundle_new_release, :roles => :app do
       bundler.create_symlink
       bundler.install
     end

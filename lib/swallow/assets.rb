@@ -4,12 +4,12 @@ Capistrano::Configuration.instance(true).load do
   namespace :assets do
     task :sync, :roles => :app do
       if use_asset_sync
-        run "cd #{release_path} && source .rvmrc && RAILS_ENV=#{rails_env} bundle exec rake assets:precompile" do |chan, stream, data|
+        run "#{source_rvmrc} && RAILS_ENV=#{rails_env} bundle exec rake assets:precompile" do |chan, stream, data|
           puts "  * [#{chan[:host]}] #{data}" if data.match(/^\s*(Using|Uploading)/)
         end
       end
 
-      run "cd #{release_path} && source .rvmrc && RAILS_ENV=#{rails_env} bundle exec rake asset:id:upload" if use_asset_id
+      run "#{source_rvmrc} && RAILS_ENV=#{rails_env} bundle exec rake asset:id:upload" if use_asset_id
 
     end
   end
