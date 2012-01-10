@@ -4,13 +4,6 @@ Capistrano::Configuration.instance(true).load do
   require 'json'
   require 'new_relic/recipes'
 
-  require 'swallow/rvm'
-  #require 'swallow/bundler'
-  require 'swallow/assets'
-  require 'swallow/unicorn'
-  require 'swallow/airbrake'
-  require 'swallow/whenever_cron'
-
   namespace :deploy do
     task :start do
       if use_unicorn
