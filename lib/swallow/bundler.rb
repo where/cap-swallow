@@ -40,7 +40,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Automatically called as apart of a standard deploy."
     task :install do
-      run "#{source_rvmrc} && bundle install --path RAILS_ENV=#{rails_env}" do |chan, stream, data|
+      run "#{source_rvmrc} && bundle install RAILS_ENV=#{rails_env}" do |chan, stream, data|
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^Installing/)
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^Updating/)
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^WARNING/)
