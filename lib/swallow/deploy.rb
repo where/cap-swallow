@@ -129,22 +129,33 @@ Capistrano::Configuration.instance(true).load do
       end
     end
 
-    desc "Locks the application to prevent multiple deploys from running at the same time"
-    task :lock, :roles => :app do
-      lock_user = capture("if [ -e #{shared_path}/deploy.lock ]; then cat #{shared_path}/deploy.lock; fi").strip
-      if !lock_user.empty?
-        puts "Oh Snap! #{lock_user} totally doing a deploy right now!. Stopping your deploy. Wha wha."
+    desc "Check to see if the application is locked"
+    task :check_lock, :roles => :app do
+      message = capture("if [ -e #{shared_path}/lock.json ]; then cat #{shared_path}/lock.json; fi").strip
+      if !message.empty?
+        json = JSON.parse(message)
+        puts "Oh Snap! #{json["user"]} locked this at #{json["locked_at"]}"
+        puts json["message"] unless json["message"].empty?
+        puts "Exiting deploy. Wha wha."
         exit
       end
+    end
 
-      run "echo '#{username}' > #{shared_path}/deploy.lock"
+    desc "Locks the application to prevent any other deploys"
+    task :lock, :roles => :app do
+      message = ENV['m']
+      message = Capistrano::CLI.ui.ask "Lock Message: " if message == nil
+
+      json = { :user => username, :locked_at => Time.now, :message => message }
+      run "echo '#{json.to_json}' > #{shared_path}/lock.json"
     end
 
     desc "Unlocks the application to allow new deploys"
     task :unlock do
-      run "if [ -e #{shared_path}/deploy.lock ]; then rm #{shared_path}/deploy.lock; fi"
+      run "if [ -e #{shared_path}/lock.json ]; then rm #{shared_path}/lock.json; fi"
     end
 
+    before "deploy:update_code", "deploy:check_lock"
     before "deploy:update_code", "deploy:prevent_stomp"
 
     after "deploy:update_code", "deploy:cleanup_git"
