@@ -45,6 +45,7 @@ Capistrano::Configuration.instance(true).load do
         end
 
       run "#{source_rvmrc} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
+      run "#{source_rvmrc} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:seed" if seed_on_migration
     end
 
     task :setup_current_ref do
@@ -128,6 +129,22 @@ Capistrano::Configuration.instance(true).load do
       end
     end
 
+    desc "Locks the application to prevent multiple deploys from running at the same time"
+    task :lock, :roles => :app do
+      lock_user = capture("if [ -e #{shared_path}/deploy.lock ]; then cat #{shared_path}/deploy.lock; fi").strip
+      if !lock_user.empty?
+        puts "Oh Snap! #{lock_user} totally doing a deploy right now!. Stopping your deploy. Wha wha."
+        exit
+      end
+
+      run "echo '#{username}' > #{shared_path}/deploy.lock"
+    end
+
+    desc "Unlocks the application to allow new deploys"
+    task :unlock do
+      run "if [ -e #{shared_path}/deploy.lock ]; then rm #{shared_path}/deploy.lock; fi"
+    end
+
     before "deploy:update_code", "deploy:prevent_stomp"
 
     after "deploy:update_code", "deploy:cleanup_git"
@@ -137,7 +154,6 @@ Capistrano::Configuration.instance(true).load do
     after "deploy:update_code", "deploy:tag"
 
     after "deploy", "deploy:cleanup"
-
   end
 
   after "deploy:update", "newrelic:notice_deployment" if use_newrelic
