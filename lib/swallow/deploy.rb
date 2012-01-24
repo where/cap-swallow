@@ -103,28 +103,30 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Prevent users from stomping on each other"
     task :prevent_stomp do
-      resp = {}
-      run "cat #{deploy_to + "/" + current_dir + "/public/deploy.json"}" do |chan, stream, data|
-        host = chan[:host].to_sym
-        resp[host] = resp[host].to_s + data
-      end
-
-      user = nil
-      resp.each_pair do |k, v|
-        v.strip!
-        existing_user = JSON.parse(v)["user"] rescue nil
-        if username != existing_user
-          user = existing_user
-          break
+      if capture("if [ -e " + deploy_to + "/" + current_dir + "/public/deploy.json ]; then echo 'true'; fi").strip == 'true'
+        resp = {}
+        run "cat #{deploy_to + "/" + current_dir + "/public/deploy.json"}" do |chan, stream, data|
+          host = chan[:host].to_sym
+          resp[host] = resp[host].to_s + data
         end
-      end
 
-      if user
-        puts "Oh No! #{user} beat you to the punch! Did you ask if you could deploy?"
-        prompt_with_default :confirm, 'Nope!', ['Nope!', 'Yep']
-        if confirm.upcase != 'YEP'
-          puts "Exiting deploy. Please lie to me next time or actually talk to the guy."
-          exit
+        user = nil
+        resp.each_pair do |k, v|
+          v.strip!
+          existing_user = JSON.parse(v)["user"] rescue nil
+          if username != existing_user
+            user = existing_user
+            break
+          end
+        end
+
+        if user
+          puts "Oh No! #{user} beat you to the punch! Did you ask if you could deploy?"
+          prompt_with_default :confirm, 'Nope!', ['Nope!', 'Yep']
+          if confirm.upcase != 'YEP'
+            puts "Exiting deploy. Please lie to me next time or actually talk to the guy."
+            exit
+          end
         end
       end
     end

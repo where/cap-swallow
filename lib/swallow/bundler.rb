@@ -7,7 +7,7 @@ Capistrano::Configuration.instance(true).load do
         host = chan[:host].to_sym
         if data.match("\s*bundler\s+")
           hosts[host] = true
-        elsif !rubies.has_key? host
+        elsif !hosts.has_key? host
           hosts[host] = false
         end
       end
@@ -19,8 +19,9 @@ Capistrano::Configuration.instance(true).load do
       if !use_rvm
         puts "  * Server does not use RVM. Skipping..."
       else
+        puts "Getting Hosts..."
         hosts = get_hosts_with_bundle
-
+        puts "Hosts: #{hosts.inspect}"
         hosts.delete_if{|key, val| val}
         if hosts.count > 0
           apps = self.roles[:app].to_ary
@@ -65,4 +66,5 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:update_code", "bundler:setup"
   after "deploy:update_code", "bundler:bundle_new_release"
 end
+
 

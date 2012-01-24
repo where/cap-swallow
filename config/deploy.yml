@@ -39,6 +39,11 @@ staging:
   env_name: cm-stg.ts
   rails_env: staging
 
+qa:
+  <<: *DEFAULT
+  env_name: cm-qa.ts
+  rails_env: qa
+
 production:
   <<: *DEFAULT
   env_name: cm.ts
