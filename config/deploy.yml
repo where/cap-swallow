@@ -18,6 +18,7 @@ default: &DEFAULT
   use_airbrake: true
   use_resque: false
   use_whenever_cron: false
+  daemon_server:
 
   # used by > ruby 1.8.7 apps
   use_paypal: false

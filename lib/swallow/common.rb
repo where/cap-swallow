@@ -81,5 +81,9 @@ Capistrano::Configuration.instance.load do
 
   # where cron jobs will be added
   role :cron, "#{cron_server}.#{env_name}", :primary => true
+
+  unless daemon_server.nil? || daemon_server.strip == ''
+    role :daemon, "#{daemon_server}.#{env_name}", :primary => true
+  end
 end
 
