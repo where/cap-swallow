@@ -103,7 +103,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Prevent users from stomping on each other"
     task :prevent_stomp do
-      if capture("if [ -e " + deploy_to + "/" + current_dir + "/public/deploy.json ]; then echo 'true'; fi").strip == 'true'
+      if ENV['HEADLESS'] != 'true' && capture("if [ -e " + deploy_to + "/" + current_dir + "/public/deploy.json ]; then echo 'true'; fi").strip == 'true'
         resp = {}
         run "cat #{deploy_to + "/" + current_dir + "/public/deploy.json"}" do |chan, stream, data|
           host = chan[:host].to_sym

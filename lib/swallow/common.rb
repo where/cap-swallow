@@ -52,11 +52,15 @@ Capistrano::Configuration.instance.load do
   branch = settings['default_branch'] if branch == nil
   settings.merge!({'branch' => branch})
 
-  # Set gateway
-  settings.merge!('gateway' => "#{ENV['USER']}@#{settings['gateway_server']}")
+  if ENV['GATEWAY'] == 'false'
+      settings['username'] = ENV['USER']
+  else
+    # Set gateway
+    settings.merge!('gateway' => "#{ENV['USER']}@#{settings['gateway_server']}")
 
-  # Set username (the actual username that is logged into the gateway, not the user on the box)
-  settings['username'] = settings['gateway'].split('@')[0] rescue ''
+    # Set username (the actual username that is logged into the gateway, not the user on the box)
+    settings['username'] = settings['gateway'].split('@')[0] rescue ''
+  end
 
   # Ensure Symbol Values
   ['scm', 'deploy_via'].each do |key|
