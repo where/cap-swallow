@@ -113,8 +113,8 @@ Capistrano::Configuration.instance(true).load do
   before "deploy:update_code", "rvm:remove_rvmrc" if use_rvm
 
   after "deploy:finalize_update", "rvm:create_rvmrc"
-  after "deploy:finalize_update", "rvm:trust_rvmrc_release" if use_rvm
   after "deploy:finalize_update", "rvm:set_gemset" if use_rvm
+  after "deploy:finalize_update", "rvm:trust_rvmrc_release" if use_rvm
 
   after "deploy:symlink", "rvm:trust_rvmrc_current" if use_rvm
 
