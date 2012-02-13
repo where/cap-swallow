@@ -2,14 +2,23 @@ Capistrano::Configuration.instance(true).load do
   namespace :bundler do
 
     def get_hosts_with_bundle
+      puts "Inside GHWB"
       hosts = {}
-      run "#{source_rvmrc} && gem list | grep bundler" do |chan, stream, data|
-        host = chan[:host].to_sym
-        if data.match("\s*bundler\s+")
-          hosts[host] = true
-        elsif !hosts.has_key? host
-          hosts[host] = false
+      puts "Hosts in GHWB: #{hosts}"
+      begin
+        run "#{source_rvmrc} && gem list | grep bundler" do |chan, stream, data|
+          puts "Received #{data}"
+          host = chan[:host].to_sym
+          puts "Set Host #{host}"
+          if data.match("\s*bundler\s+")
+            hosts[host] = true
+          elsif !hosts.has_key? host
+            hosts[host] = false
+          end
         end
+      rescue e
+        puts "OMFG!!!!"
+        puts e.backtrace
       end
       hosts
     end

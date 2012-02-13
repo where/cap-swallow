@@ -45,6 +45,11 @@ qa:
   env_name: cm-qa.ts
   rails_env: qa
 
+pilot:
+  <<: *DEFAULT
+  env_name: cm-pilot.ts
+  rails_env: pilot
+
 production:
   <<: *DEFAULT
   env_name: cm.ts
