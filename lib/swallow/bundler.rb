@@ -40,7 +40,7 @@ Capistrano::Configuration.instance(true).load do
     desc "Automatically called as apart of a standard deploy."
     task :install, :roles => :app do
       puts "Made Changes to bundle install"
-      run "#{source_rvmrc} && bundle install" do |chan, stream, data|
+      run "#{source_rvmrc} && (bundle check || bundle install)" do |chan, stream, data|
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^Installing/)
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^Updating/)
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^WARNING/)
@@ -49,7 +49,7 @@ Capistrano::Configuration.instance(true).load do
 
       on_rollback do
         if previous_release
-          run "echo previous && #{source_rvmrc previous_release} && bundle install"
+          run "echo previous && #{source_rvmrc previous_release} && (bundle check || bundle install)"
         else
           logger.important "no previous release to rollback to, rollback of bundler:install skipped"
         end
