@@ -16,7 +16,7 @@ Capistrano::Configuration.instance(true).load do
             puts "  * [#{chan[:host]}] #{data}" if data.match(/^\s*(Using|Uploading)/)
           end
         else
-          puts "Skipping asset pre-compilation because there were no asset changes"
+          puts "  * Skipping asset pre-compilation because there were no asset changes"
           run "cp -r #{previous_release}/public/assets #{release_path}/public"
         end
 
