@@ -104,7 +104,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Remove existing rvmrc from project if it exists"
     task :remove_rvmrc do
-      run "test -f #{shared_path}/cached-copy/.rvmrc && rm #{shared_path}/cached-copy/.rvmrc || true"
+      run "test -f #{cache_path}/.rvmrc && rm #{cache_path}/.rvmrc || true"
     end
   end
 

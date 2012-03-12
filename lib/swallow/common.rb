@@ -5,6 +5,10 @@ class Hash
 end
 
 Capistrano::Configuration.instance.load do
+  def cache_path
+    "#{shared_path}/cached-copy"
+  end
+
   def prompt_with_default(var, default, options=[])
     set(var) do
       opts = options.length > 0 ? "(#{options.join(', ')})" : ''
