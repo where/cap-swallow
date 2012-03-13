@@ -77,13 +77,20 @@ Capistrano::Configuration.instance(true).load do
     desc "Automatically called as apart of a standard deploy. Create a deploy.json tag in the public directory with information about the release."
     task :tag do
       setup_current_ref
+
+      properties = {}
+      run "cat #{release_path}/config/application.yml 2>/dev/null || true" do |chan, stream, data|
+        properties = YAML::load(data) if !data.nil? && data != '' rescue 'error'
+      end
+
       tag = {:app => application, 
              :user => username,
              :deployed_at => Time.now,
              :branch => branch,
              :ruby => capture("#{source_rvmrc} && ruby -v"),
              :rvm => use_rvm ? capture("#{source_rvmrc} && rvm-prompt i v p g") : 'N/A',
-             :ref => ref }
+             :ref => ref,
+             :properties => properties }
 
       run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
     end
