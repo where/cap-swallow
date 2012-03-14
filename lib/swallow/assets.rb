@@ -10,8 +10,17 @@ Capistrano::Configuration.instance(true).load do
 
         # deploy_via remote_cache is the only method that currently supports detecting if the assets
         # have already been precompiled and using that as instead of recompiling.
-        if deploy_via.to_s != 'remote_cache' || 
-           capture("cd #{cache_path} && #{source.local.log(from)} vendor/assets/ app/assets/ | wc -l").to_i > 0
+
+        previous_assets_exist = true
+        run "if [ -e '#{previous_release}/public/assets' ]; then echo 'FOUND'; else echo 'NOT FOUND'; fi" do |chan, stream, data|
+          if data.strip != 'FOUND'
+            puts "!!! Previous Assets Not Found - cannot skip asset compilation.  Did you cancel out of a deploy before it finished?"
+            previous_assets_exist = false
+          end
+        end
+
+        if deploy_via.to_s != 'remote_cache' || ! previous_assets_exist ||  
+           capture("cd #{cache_path} && #{source.local.log(from)} vendor/assets/ app/assets/ | wc -l").to_i > 0 
           run "#{source_rvmrc} && RAILS_ENV=#{rails_env} bundle exec rake assets:precompile" do |chan, stream, data|
             puts "  * [#{chan[:host]}] #{data}" if data.match(/^\s*(Using|Uploading)/)
           end
