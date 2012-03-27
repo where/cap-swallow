@@ -1,6 +1,6 @@
 Capistrano::Configuration.instance.load do
   # Verify intent to deploy
-  if verify_intent
+  if ENV['HEADLESS'] != 'true' && verify_intent
     puts 'Cmaaan....really?'
     puts "Deploy #{branch} to #{env}?"
     prompt_with_default :confirm, 'kidding'
