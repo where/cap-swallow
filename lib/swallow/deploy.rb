@@ -62,10 +62,12 @@ Capistrano::Configuration.instance(true).load do
       run "cp -p #{production_db_config} #{release_path}/config/database.yml"
     end
 
-    desc "Automatically called as apart of a standard deploy. Copies the paypal config from the shared directory over the one provided."
-    task :copy_paypal_configuration do
-      production_paypal_config = '/usr/share/where/shared_config/paypal.yml'
-      run "cp -p #{production_paypal_config} #{release_path}/config/paypal.yml"
+    desc "Automatically called as apart of a standard deploy. Copies configs from the shared directory over the one provided."
+    task :copy_configs do
+      shared_configs = '/usr/share/where/shared_config'
+      config_files.each do |filename|
+        run "cp -p #{shared_configs}/#{filename} #{release_path}/config/#{filename}"
+      end
     end
 
     desc "Automatically called as apart of a standard deploy. Copies the memcache config from the shared directory over the one provided."
@@ -93,14 +95,6 @@ Capistrano::Configuration.instance(true).load do
              :properties => properties }
 
       run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
-    end
-
-    desc "Automaticall called as apart of a standard deploy. Copies the shared resque config to the application if there is a `use_resque` configuration"
-    task :copy_resque_configuration do
-      if use_resque
-        resque_config = "/usr/share/where/shared_config/#{application}.resque.yml"
-        run "cp -p #{resque_config} #{release_path}/config/resque.yml"
-      end
     end
 
     desc "Remove git files from deploy directory"
@@ -170,7 +164,7 @@ Capistrano::Configuration.instance(true).load do
     after "deploy:update_code", "deploy:cleanup_git"
     after "deploy:update_code", "deploy:copy_database_configuration"
     after "deploy:update_code", "deploy:copy_memcache_configuration"
-    after "deploy:update_code", "deploy:copy_paypal_configuration" if use_paypal
+    after "deploy:update_code", "deploy:copy_configs"
     after "deploy:update_code", "deploy:tag"
 
     after "deploy", "deploy:cleanup"
