@@ -71,10 +71,18 @@ Capistrano::Configuration.instance.load do
     settings.merge!(key.to_s => settings[key.to_s].to_sym)
   end
 
+  settings['config_files'] ||= []
+  if settings['config_files'].class != Array
+    settings['config_files'] = [settings['config_files']]
+  end
+
   # Set all settings as cap configs
   settings.each do |s|
     set s[0].to_sym, s[1]
   end
+
+  config_files << "#{application}.database.yml" if use_database
+  config_files << 'memcache.yml'
 
   # Generate all of the web and app server names
   server_names = servers.map do |n| 
