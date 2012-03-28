@@ -81,7 +81,6 @@ Capistrano::Configuration.instance.load do
     set s[0].to_sym, s[1]
   end
 
-  config_files << "#{application}.database.yml" if use_database
   config_files << 'memcache.yml'
 
   # Generate all of the web and app server names

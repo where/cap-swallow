@@ -56,6 +56,12 @@ Capistrano::Configuration.instance(true).load do
       set :ref, sha
     end
 
+    desc "Automatically called as apart of a standard deploy. Copies the database config from the shared directory over the one provided."
+    task :copy_database_configuration do
+      production_db_config = "/usr/share/where/shared_config/#{application}.database.yml"
+      run "cp -p #{production_db_config} #{release_path}/config/database.yml"
+    end
+
     desc "Automatically called as apart of a standard deploy. Copies configs from the shared directory over the one provided."
     task :copy_configs do
       shared_configs = '/usr/share/where/shared_config'
@@ -150,6 +156,7 @@ Capistrano::Configuration.instance(true).load do
     before "deploy:update_code", "deploy:prevent_stomp"
 
     after "deploy:update_code", "deploy:cleanup_git"
+    after "deploy:update_code", "deploy:copy_database_configuration"
     after "deploy:update_code", "deploy:copy_configs"
     after "deploy:update_code", "deploy:tag"
 
