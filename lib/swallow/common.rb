@@ -73,7 +73,7 @@ Capistrano::Configuration.instance.load do
 
   settings['config_files'] ||= []
   if settings['config_files'].class != Array
-    settings['config_files'] = [settings['config_files']]
+    settings['config_files'] = [settings['additional_config_files']]
   end
 
   # Set all settings as cap configs

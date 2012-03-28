@@ -18,7 +18,7 @@ default: &DEFAULT
   use_airbrake: true
   use_whenever_cron: false
   daemon_server:
-  additional_config_files: []
+  config_files: []
 
   # used by > ruby 1.8.7 apps
   use_asset_sync: true
