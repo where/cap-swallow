@@ -116,7 +116,7 @@ Capistrano::Configuration.instance(true).load do
   after "deploy:finalize_update", "rvm:set_gemset" if use_rvm
   after "deploy:finalize_update", "rvm:trust_rvmrc_release" if use_rvm
 
-  after "deploy:symlink", "rvm:trust_rvmrc_current" if use_rvm
+  after "deploy:create_symlink", "rvm:trust_rvmrc_current" if use_rvm
 
 end
 
