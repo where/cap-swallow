@@ -36,6 +36,6 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
-  before "deploy:symlink", "assets:sync"
+  before "deploy:create_symlink", "assets:sync"
 end
 

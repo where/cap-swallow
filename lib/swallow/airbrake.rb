@@ -7,6 +7,6 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
-  before "deploy:symlink", "airbrake:notice_deployment"
+  before "deploy:create_symlink", "airbrake:notice_deployment"
 end
 
