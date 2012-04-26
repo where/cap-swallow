@@ -39,7 +39,6 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Automatically called as apart of a standard deploy."
     task :install, :roles => :app do
-      puts "Made Changes to bundle install"
       run "#{source_rvmrc} && (bundle check || bundle install)" do |chan, stream, data|
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^Installing/)
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^Updating/)
