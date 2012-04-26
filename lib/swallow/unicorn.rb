@@ -6,7 +6,7 @@ Capistrano::Configuration.instance(true).load do
       run "ln -s /etc/init.d/unicorn #{shared_path}/system/#{application}"
     end
 
-    task :create_shared_sockets_dir do
+    task :setup_sockets_dir do
       run "mkdir #{shared_path}/sockets"
     end
 
@@ -17,7 +17,7 @@ Capistrano::Configuration.instance(true).load do
   end
 
   after "deploy:setup", "unicorn:create_symlink" if use_unicorn
-  after "deploy:setup", "unicorn:create_shared_sockets_dir" if use_unicorn
+  after "deploy:setup", "unicorn:setup_sockets_dir" if use_unicorn
   after "deploy:finalize_update", "unicorn:create_socket_dir" if use_unicorn
 
 end
