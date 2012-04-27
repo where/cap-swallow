@@ -53,7 +53,7 @@ Capistrano::Configuration.instance.load do
 
   # branch / tag override
   branch = ENV['r']
-  branch = settings['default_branch'] if branch == nil
+  branch = settings['default_branch'] if branch.nil?
   settings.merge!({'branch' => branch})
 
   if ENV['GATEWAY'] == 'false'
