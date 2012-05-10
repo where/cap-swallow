@@ -12,6 +12,16 @@ Capistrano::Configuration.instance.load do
         print "\n"
       end
     end
+
+    desc "Enable the site & take down the maintance page."
+    task :enable do
+      run "rm /usr/share/where/maintenance"
+    end
+
+    desc "Diable the site & put up the maintenance page."
+    task :disable do
+      run "touch /usr/share/where/maintenance"
+    end
   end
 end
 
