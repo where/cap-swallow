@@ -17,10 +17,29 @@ Capistrano::Configuration.instance(true).load do
       rubies
     end
 
+    desc "Install RVMRC"
+    task :init do
+      first_line = true
+      run "git clone git://github.com/sstephenson/rbenv.git ~/.rbenv" do |chan, stream, data|
+        host = chan[:host].to_sym
+        if first_line
+          print "  * [#{host}] Installing RVMRC"
+        else
+          print '.'
+        end
+      end
+
+      capture %{echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile}
+      capture %{echo 'eval "$(rbenv init -)"' >> ~/.bash_profile}
+      capture 'mkdir -p ~/.rbenv/plugins'
+      capture 'git clone git://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build'
+
+    end
+
     desc "Check and install the project's version of ruby if necessary."
     task :setup do
       # determine if each host has the proper ruby installed
-      rubies = get_rubies(rvm_ruby)
+      rubies = get_rubies(ruby_version)
       skipped_rubies = rubies.clone
 
       # print out the skipped hosts, if any
@@ -58,7 +77,13 @@ Capistrano::Configuration.instance(true).load do
       end
     end
 
-    before "deploy:setup", "rbenv:setup"
-
+    desc "Calls rbenv rehash"
+    task :rehash do
+      capture 'rbenv rehash'
+    end
   end
+
+  before "deploy:setup", "rbenv:setup"
+
+  after "bundler:setup", "rbenv:rehash"
 end

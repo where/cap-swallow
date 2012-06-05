@@ -77,8 +77,6 @@ Capistrano::Configuration.instance.load do
     set s[0].to_sym, s[1]
   end
 
-  config_files << 'memcache.yml'
-
   # Generate all of the web and app server names
   server_names = servers.map do |n| 
     "#{n}.#{env_name}"

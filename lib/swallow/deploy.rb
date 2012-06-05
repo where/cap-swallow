@@ -7,14 +7,14 @@ Capistrano::Configuration.instance(true).load do
   namespace :deploy do
     task :start do
       if use_unicorn
-        run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} start" do
+        run "cd #{release_path} && bundle exec unicorn_rails -c #{release_path}/config/unicorn.rb -E #{rails_env} -D" do
         end
       end
     end
 
     task :stop do
       if use_unicorn
-        run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} stop" do
+        run "kill -QUIT `cat #{shared_path}/pids/unicorn.pid`"do
         end
       end
     end
@@ -40,8 +40,8 @@ Capistrano::Configuration.instance(true).load do
         else raise ArgumentError, "unknown migration target #{migrate_target.inspect}"
         end
 
-      run "#{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
-      run "#{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:seed" if seed_on_migration
+      run "cd #{release_path} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
+      run "cd #{release_path} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:seed" if seed_on_migration
     end
 
     task :setup_current_ref do
