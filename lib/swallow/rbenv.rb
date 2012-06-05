@@ -57,5 +57,8 @@ Capistrano::Configuration.instance(true).load do
         exit 0
       end
     end
+
+    before "deploy:setup", "rbenv:setup"
+
   end
 end
