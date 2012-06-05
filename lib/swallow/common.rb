@@ -41,6 +41,8 @@ Capistrano::Configuration.instance.load do
   # Set settings for the env
   settings = config[env]
 
+  set :normalize_asset_timestamps, false
+
   # No settings, halt
   if settings == nil
     puts "Invalid ENV #{env}! Use one of #{available_envs.join(', ')}!"
