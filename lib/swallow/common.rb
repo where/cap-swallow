@@ -17,10 +17,6 @@ Capistrano::Configuration.instance.load do
     set var, default if eval("#{var.to_s}.empty?")
   end
 
-  def rvm_run(command)
-    run "cd #{release_path} && source .rvmrc && #{command}"
-  end
-
   _cset(:application_config) { "#{Dir.pwd}/config/deploy.yml" }
 
   # Load settings from yaml

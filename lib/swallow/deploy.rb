@@ -40,8 +40,8 @@ Capistrano::Configuration.instance(true).load do
         else raise ArgumentError, "unknown migration target #{migrate_target.inspect}"
         end
 
-      run "#{source_rvmrc} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
-      run "#{source_rvmrc} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:seed" if seed_on_migration
+      run "#{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
+      run "#{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:seed" if seed_on_migration
     end
 
     task :setup_current_ref do
@@ -79,12 +79,11 @@ Capistrano::Configuration.instance(true).load do
              :user => username,
              :deployed_at => Time.now,
              :branch => branch,
-             :ruby => capture("#{source_rvmrc} && ruby -v"),
-             :rvm => use_rvm ? capture("#{source_rvmrc} && rvm-prompt i v p g") : 'N/A',
+             :ruby => capture("ruby -v"),
              :ref => ref,
              :properties => properties }
 
-      run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
+      capture "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
     end
 
     desc "Remove git files from deploy directory"

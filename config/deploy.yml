@@ -12,27 +12,26 @@ default: &DEFAULT
   servers: [app01, app02]
   db_server: app01
   cron_server: app01
+  daemon_server:
+
+  ruby_version: 1.9.3-p123
 
   verify_intent: false
   use_newrelic: true
   use_airbrake: true
   use_whenever_cron: false
-  daemon_server:
   config_files: []
 
-  # used by > ruby 1.8.7 apps
   use_asset_sync: true
-  use_rvm: true
+  use_rbenv: true
   use_unicorn: true
-  rvm_ruby: ruby-1.9.3-p0
-  rvm_gemset: global
+
   seed_on_migration: false
+  use_database: true
 
   # used by legacy apps (smb_portal, nearbuys, where_web, lg)
   use_asset_id: false
   use_passenger: false
-  use_database: true
-  use_hoptoad: false
 
 staging:
   <<: *DEFAULT

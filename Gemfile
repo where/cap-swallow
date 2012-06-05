@@ -7,3 +7,4 @@ gem 'newrelic_rpm'
 gem 'rvm'
 gem 'capistrano', :require => false
 gem 'jeweler'
+gem 'rvm-capistrano'
