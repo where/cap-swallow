@@ -7,7 +7,7 @@ Capistrano::Configuration.instance(true).load do
   namespace :deploy do
     task :start do
       if use_unicorn
-        run "cd #{latest_release} && bundle exec unicorn_rails -c #{release_path}/config/unicorn.rb -E #{rails_env} -D" do
+        run "cd #{latest_release} && bundle exec unicorn_rails -c #{latest_release}/config/unicorn.rb -E #{rails_env} -D" do
         end
       end
     end
@@ -46,7 +46,7 @@ Capistrano::Configuration.instance(true).load do
 
     task :setup_current_ref do
       sha = ''
-      run "cat #{release_path}/REVISION" do |c, s, d|
+      run "cat #{latest_release}/REVISION" do |c, s, d|
         sha = d.strip
       end
       set :ref, sha
@@ -55,14 +55,14 @@ Capistrano::Configuration.instance(true).load do
     desc "Automatically called as apart of a standard deploy. Copies the database config from the shared directory over the one provided."
     task :copy_database_configuration do
       production_db_config = "/usr/share/where/shared_config/#{application}.database.yml"
-      run "cp -p #{production_db_config} #{release_path}/config/database.yml"
+      run "cp -p #{production_db_config} #{latest_release}/config/database.yml"
     end
 
     desc "Automatically called as apart of a standard deploy. Copies configs from the shared directory over the one provided."
     task :copy_configs do
       shared_configs = '/usr/share/where/shared_config'
       config_files.each do |filename|
-        run "cp -p #{shared_configs}/#{filename} #{release_path}/config/#{filename}"
+        run "cp -p #{shared_configs}/#{filename} #{latest_release}/config/#{filename}"
       end
     end
 
@@ -71,7 +71,7 @@ Capistrano::Configuration.instance(true).load do
       setup_current_ref
 
       properties = {}
-      run "cat #{release_path}/config/application.yml 2>/dev/null || true" do |chan, stream, data|
+      run "cat #{latest_release}/config/application.yml 2>/dev/null || true" do |chan, stream, data|
         properties = YAML::load(data) if !data.nil? && data != '' rescue 'error'
       end
 
@@ -83,12 +83,12 @@ Capistrano::Configuration.instance(true).load do
              :ref => ref,
              :properties => properties }
 
-      capture "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
+      capture "echo '#{tag.to_json}' > #{latest_release}/public/deploy.json"
     end
 
     desc "Remove git files from deploy directory"
     task :cleanup_git, :roles => :app do
-      run "rm -rf #{release_path}/.git*"
+      run "rm -rf #{latest_release}/.git*"
     end
 
     desc "Prevent users from stomping on each other"
