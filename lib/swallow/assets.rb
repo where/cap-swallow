@@ -21,12 +21,12 @@ Capistrano::Configuration.instance(true).load do
 
         if deploy_via.to_s != 'remote_cache' || ! previous_assets_exist ||
            capture("cd #{cache_path} && #{source.local.log(from)} vendor/assets/ app/assets/ | wc -l").to_i > 0
-          run "bundle exec rake assets:precompile" do |chan, stream, data|
+          run "cd #{latest_release} && bundle exec rake assets:precompile" do |chan, stream, data|
             puts "  * [#{chan[:host]}] #{data}" if data.match(/^\s*(Using|Uploading)/)
           end
         else
           puts "  * Skipping asset pre-compilation because there were no asset changes"
-          run "cp -r #{previous_release}/public/assets #{release_path}/public"
+          run "cp -r #{previous_release}/public/assets #{latest_release}/public"
         end
 
       end
