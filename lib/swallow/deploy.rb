@@ -5,23 +5,21 @@ Capistrano::Configuration.instance(true).load do
   require 'new_relic/recipes'
 
   namespace :deploy do
-    task :start do
+    task :start, :roles => :app do
       if use_unicorn
-        run "cd #{latest_release} && bundle exec unicorn_rails -c #{latest_release}/config/unicorn.rb -E #{rails_env} -D" do
-        end
+        capture "cd #{latest_release} && bundle exec unicorn_rails -c #{current_path}/config/unicorn.rb -E #{rails_env} -D"
       end
     end
 
-    task :stop do
+    task :stop, :roles => :app do
       if use_unicorn
-        run "kill -QUIT `cat #{shared_path}/pids/unicorn.pid`"do
-        end
+        capture "kill -QUIT `cat #{shared_path}/pids/unicorn.pid`"
       end
     end
 
     task :restart, :roles => :app, :except => { :no_release => true } do
       run "kill -s USR2 `cat #{shared_path}/pids/unicorn.pid`" if use_unicorn # zero downtime with unicorn
-      run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}" if use_passenger
+      run "#{try_sudo} touch #{File.join(latest_release,'tmp','restart.txt')}" if use_passenger
     end
 
     task :cold do

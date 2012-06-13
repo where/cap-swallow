@@ -1,14 +1,19 @@
 Capistrano::Configuration.instance(true).load do
-  set :default_environment, { 'PATH' => '/home/deploy/.rbenv/shims:/home/deploy/.rbenv/bin:$PATH' }
+  set :default_environment, { 'PATH' => '/home/deploy/.rbenv/shims:/home/deploy/.rbenv/bin:$PATH', 'RBENV_VERSION' => ruby_version }
   set :bundle_flags, '--deployment --quiet --binstubs --shebang ruby-local-exec'
 
   namespace :rbenv do
 
     def get_rubies(version)
       rubies = {}
-      run "rbenv versions" do |chan, stream, data|
+
+      find_servers.each do |server|
+        rubies[server.host.to_sym] = false
+      end
+
+      run "RBENV_VERSION='' rbenv versions" do |chan, stream, data|
         host = chan[:host].to_sym
-        if data.match("\s*#{version}\s+.*")
+        if data.match("\s*#{version}.*")
           rubies[host] = true
         elsif !rubies.has_key? host
           rubies[host] = false
@@ -18,7 +23,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     desc "Install RVMRC"
-    task :init do
+    task :init, :roles => :app do
       first_line = true
       run "git clone git://github.com/sstephenson/rbenv.git ~/.rbenv" do |chan, stream, data|
         host = chan[:host].to_sym
@@ -37,7 +42,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     desc "Check and install the project's version of ruby if necessary."
-    task :setup do
+    task :setup, :roles => :app do
       # determine if each host has the proper ruby installed
       rubies = get_rubies(ruby_version)
       skipped_rubies = rubies.clone
@@ -53,27 +58,13 @@ Capistrano::Configuration.instance(true).load do
       if rubies.count > 0
         apps = self.roles[:app].to_ary
         apps.each_with_index do |host, i|
-          first_line = true
-          run "rbenv install #{ruby_version} --with-openssl-dir=/usr/local" do |chan, stream, data|
-            if first_line
-              print "  * [#{host}] Installing #{ruby_version} "
-              first_line = false
-            end
-            print '.'
+          print "  * [#{host}] Installing #{ruby_version} "
+          run "RBENV_VERSION='' rbenv install #{ruby_version} --with-openssl-dir=/usr/local" do |chan, stream, data|
+            host = chan[:host].to_sym
+            print "  * [#{host}] #{data}"
           end
-          run "rbenv rehash"
+          capture "rbenv rehash"
         end
-      end
-
-      # check that ruby was properly installed, if any installs were required
-      if rubies.count > 0
-        rubies = get_rubies(ruby_version).delete_if {|key, value| value}
-      end
-
-      # bail if there was an issue
-      if rubies.count > 0
-        puts "!!! Could not install the project's necessary ruby. Stopping deploy."
-        exit 0
       end
     end
 
@@ -83,7 +74,8 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
-  before "deploy:setup", "rbenv:setup"
+  before "deploy:setup", "rbenv:setup" if use_rbenv
 
-  after "bundler:setup", "rbenv:rehash"
+  after "bundler:setup", "rbenv:rehash" if use_rbenv
+  after "bundler:install", "rbenv:rehash" if use_rbenv
 end

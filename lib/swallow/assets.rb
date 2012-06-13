@@ -19,9 +19,8 @@ Capistrano::Configuration.instance(true).load do
           end
         end
 
-        if deploy_via.to_s != 'remote_cache' || ! previous_assets_exist ||
-           capture("cd #{cache_path} && #{source.local.log(from)} vendor/assets/ app/assets/ | wc -l").to_i > 0
-          run "cd #{latest_release} && bundle exec rake assets:precompile" do |chan, stream, data|
+        if deploy_via.to_s != 'remote_cache' || ! previous_assets_exist || capture("cd #{cache_path} && #{source.local.log(from)} vendor/assets/ app/assets/ | wc -l").to_i > 0
+          run "cd #{latest_release} && RAILS_ENV=#{env} bundle exec rake assets:precompile" do |chan, stream, data|
             puts "  * [#{chan[:host]}] #{data}" if data.match(/^\s*(Using|Uploading)/)
           end
         else
@@ -36,6 +35,6 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
-  before "deploy:create_symlink", "assets:sync"
+  after "deploy:create_symlink", "assets:sync"
 end
 
