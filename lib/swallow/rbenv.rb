@@ -24,25 +24,16 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Install RVMRC"
     task :init, :roles => :app do
-      first_line = true
-      run "git clone git://github.com/sstephenson/rbenv.git ~/.rbenv" do |chan, stream, data|
-        host = chan[:host].to_sym
-        if first_line
-          print "  * [#{host}] Installing RVMRC"
-        else
-          print '.'
-        end
-      end
-
-      capture %{echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile}
-      capture %{echo 'eval "$(rbenv init -)"' >> ~/.bash_profile}
-      capture 'mkdir -p ~/.rbenv/plugins'
-      capture 'git clone git://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build'
-
+      puts "  * Installing RVMRC"
+      run "git clone git://github.com/sstephenson/rbenv.git ~/.rbenv"
+      run %{echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile}
+      run %{echo 'eval "$(rbenv init -)"' >> ~/.bash_profile}
+      run 'mkdir -p ~/.rbenv/plugins'
+      run 'git clone git://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build'
     end
 
     desc "Check and install the project's version of ruby if necessary."
-    task :setup, :roles => :app do
+    task :setup_ruby do
       # determine if each host has the proper ruby installed
       rubies = get_rubies(ruby_version)
       skipped_rubies = rubies.clone
@@ -50,7 +41,7 @@ Capistrano::Configuration.instance(true).load do
       # print out the skipped hosts, if any
       skipped_rubies.delete_if {|key, value| !value}
       skipped_rubies.each do |key|
-        puts "  - [#{key}] #{ruby_version} already installed. Skipping."
+        puts "  * [#{key[0]}] #{ruby_version} already installed. Skipping."
       end
 
       # install on the hosts without the proper ruby, if any
@@ -61,21 +52,29 @@ Capistrano::Configuration.instance(true).load do
           print "  * [#{host}] Installing #{ruby_version} "
           run "RBENV_VERSION='' rbenv install #{ruby_version} --with-openssl-dir=/usr/local" do |chan, stream, data|
             host = chan[:host].to_sym
-            print "  * [#{host}] #{data}"
+            if data.match(/^(Downloading|Installing|Installed) .+/)
+              puts " ** [out :: #{chan[:host]}] #{data}"
+            else
+              print "*** [#{stream} :: #{host}] #{data}"
+            end
           end
-          capture "rbenv rehash"
+          rehash
         end
       end
     end
 
     desc "Calls rbenv rehash"
     task :rehash do
-      capture 'rbenv rehash'
+      run 'rbenv rehash'
     end
   end
 
-  before "deploy:setup", "rbenv:setup" if use_rbenv
+  if use_rbenv
+    before "deploy:setup", "rbenv:setup_ruby"
+    before "deploy:update_code", "rbenv:setup_ruby"
 
-  after "bundler:setup", "rbenv:rehash" if use_rbenv
-  after "bundler:install", "rbenv:rehash" if use_rbenv
+    after "deploy:init", "rbenv:init"
+    after "bundler:setup", "rbenv:rehash"
+    after "bundler:install", "rbenv:rehash"
+  end
 end

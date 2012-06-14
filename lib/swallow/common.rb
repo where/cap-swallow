@@ -80,7 +80,7 @@ Capistrano::Configuration.instance.load do
   end
 
   # Generate all of the web and app server names
-  server_names = servers.map do |n| 
+  server_names = servers.map do |n|
     "#{n}.#{env_name}"
   end
 

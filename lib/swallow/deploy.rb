@@ -5,15 +5,20 @@ Capistrano::Configuration.instance(true).load do
   require 'new_relic/recipes'
 
   namespace :deploy do
+
+    desc "Sets up a fresh server that does not have any projects on it yet"
+    task :init do
+    end
+
     task :start, :roles => :app do
       if use_unicorn
-        capture "cd #{latest_release} && bundle exec unicorn_rails -c #{current_path}/config/unicorn.rb -E #{rails_env} -D"
+        run "cd #{latest_release} && bundle exec unicorn_rails -c #{current_path}/config/unicorn.rb -E #{rails_env} -D"
       end
     end
 
     task :stop, :roles => :app do
       if use_unicorn
-        capture "kill -QUIT `cat #{shared_path}/pids/unicorn.pid`"
+        run "kill -QUIT `cat #{shared_path}/pids/unicorn.pid`"
       end
     end
 
@@ -81,7 +86,7 @@ Capistrano::Configuration.instance(true).load do
              :ref => ref,
              :properties => properties }
 
-      capture "echo '#{tag.to_json}' > #{latest_release}/public/deploy.json"
+      run "echo '#{tag.to_json}' > #{latest_release}/public/deploy.json"
     end
 
     desc "Remove git files from deploy directory"
