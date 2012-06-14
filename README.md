@@ -26,9 +26,4 @@
     * Sync any assets that need to be sent to the CDN (`assets:sync`)
     * Run the airbrake/hoptoad & New Relic deploy notifications (`airbrake:notice_deployment` and `newrelic:notice_deployment`)
     * Run the database migrations (`deploy:migrate`)
-7. Run `$ cap deploy:migrations`. This will:
-    * Create (``)
-    * Create (``)
-    * Create (``)
-    * Create (``)
  

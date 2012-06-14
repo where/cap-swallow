@@ -12,7 +12,7 @@ Capistrano::Configuration.instance(true).load do
         # have already been precompiled and using that as instead of recompiling.
 
         previous_assets_exist = true
-        run "if [ -e '#{previous_release}/public/assets' ]; then echo 'FOUND'; else echo 'NOT FOUND'; fi", :once => true do |chan, stream, data|
+        run "if [ -e '#{previous_release}/public/assets' ]; then echo 'FOUND'; else echo 'NOT FOUND'; fi" do |chan, stream, data|
           if data.strip != 'FOUND'
             puts "  * Previous Assets Not Found - running asset compilation."
             previous_assets_exist = false
@@ -20,17 +20,17 @@ Capistrano::Configuration.instance(true).load do
         end
 
         if deploy_via.to_s != 'remote_cache' || ! previous_assets_exist || capture("cd #{cache_path} && #{source.local.log(from)} vendor/assets/ app/assets/ | wc -l").to_i > 0
-          run "cd #{latest_release} && RAILS_ENV=#{env} bundle exec rake assets:precompile", :once => true do |chan, stream, data|
+          run "cd #{latest_release} && RAILS_ENV=#{env} bundle exec rake assets:precompile" do |chan, stream, data|
             puts "  * [#{chan[:host]}] #{data}" if data.match(/^\s*(Using|Uploading)/)
           end
         else
           puts "  * Skipping asset pre-compilation because there were no asset changes"
-          run "cp -r #{previous_release}/public/assets #{latest_release}/public", :once => true
+          run "cp -r #{previous_release}/public/assets #{latest_release}/public"
         end
 
       end
 
-      run "bundle exec rake asset:id:upload", :once => true if use_asset_id
+      run "bundle exec rake asset:id:upload" if use_asset_id
 
     end
   end
