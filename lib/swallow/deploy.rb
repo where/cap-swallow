@@ -27,10 +27,25 @@ Capistrano::Configuration.instance(true).load do
       run "#{try_sudo} touch #{File.join(latest_release,'tmp','restart.txt')}" if use_passenger
     end
 
+    desc "Used on the first deploy of the project to load the schema into a fresh database"
+    task :first do
+      update
+      if use_database
+        load_schema
+        seed
+      end
+      start
+    end
+
     task :cold do
       update
       migrate if use_database
       start
+    end
+
+    desc "Loads the database schema into a fresh database"
+    task :load_schema, :roles => :db, :only =>  { :primary => true } do
+      run "cd #{latest_release} && bundle exec rake RAILS_ENV=#{rails_env} db:schema:load"
     end
 
     task :migrate, :roles => :db, :only => { :primary => true } do
@@ -43,8 +58,13 @@ Capistrano::Configuration.instance(true).load do
         else raise ArgumentError, "unknown migration target #{migrate_target.inspect}"
         end
 
-      run "cd #{latest_release} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
-      run "cd #{latest_release} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:seed" if seed_on_migration
+      run "cd #{latest_release} && bundle exec rake RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
+      seed if seed_on_migration
+    end
+
+    desc "Seeds the database"
+    task :seed, :roles => :db, :only => { :primary => true } do
+      run "cd #{latest_release} && bundle exec rake RAILS_ENV=#{rails_env} #{migrate_env} db:seed" 
     end
 
     task :setup_current_ref do
