@@ -8,13 +8,14 @@
 # New Project Setup
 1. Copy the default `Capfile` from the Swallow project to the project's root.
 2. Copy the default `config/deploy.yml` to the project.
-3. Edit `deploy.yml` to match the project's needs. See the config section to get an understanding for what is needed and what is not.
-4. If the project will use unicorn, follow the setting up unicorn instructions.
-5. Run `$ cap deploy:setup` and select the targeted environment. This will:
+3. Copy and configure the default `config/newrelic.yml`, or in `config/deploy.yml` set `use_newrelic: false`. 
+4. Edit `deploy.yml` to match the project's needs. See the config section to get an understanding for what is needed and what is not.
+5. If the project will use unicorn, follow the setting up unicorn instructions.
+6. Run `$ cap deploy:setup` and select the targeted environment. This will:
     * Create the project's main directory structure 
     * Install the project's specified ruby version (`rbenv:setup_ruby`)
     * Create the shared unicorn  (`unicorn:setup_sockets_dir`)
-6. Run `$ cap deploy:cold`. This will:
+7. Run `$ cap deploy:cold`. This will:
     * Install the project's version of ruby if it's not already installed (`rbenv:setup_ruby`)
     * Pull down the latest code from GitHub
     * Properly link the standard shared directories to the project (i.e. /log, /tmp/pids)
