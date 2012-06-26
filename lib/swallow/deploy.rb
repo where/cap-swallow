@@ -64,7 +64,7 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Seeds the database"
     task :seed, :roles => :db, :only => { :primary => true } do
-      run "cd #{latest_release} && bundle exec rake RAILS_ENV=#{rails_env} #{migrate_env} db:seed" 
+      run "cd #{latest_release} && bundle exec rake RAILS_ENV=#{rails_env} db:seed"
     end
 
     task :setup_current_ref do
