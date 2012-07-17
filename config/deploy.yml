@@ -27,6 +27,7 @@ default: &DEFAULT
   rvm_ruby: ruby-1.9.3-p0
   rvm_gemset: global
   seed_on_migration: false
+  use_resque: false
 
   # used by legacy apps (smb_portal, nearbuys, where_web, lg)
   use_asset_id: false
