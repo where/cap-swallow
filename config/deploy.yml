@@ -29,6 +29,7 @@ default: &DEFAULT
 
   seed_on_migration: false
   use_database: true
+  use_resque: false
 
   # used by legacy apps (smb_portal, nearbuys, where_web, lg)
   use_asset_id: false
