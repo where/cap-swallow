@@ -6,6 +6,6 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
-  after "deploy", "deploy:restart_workers"
+  after "deploy:create_symlink", "deploy:restart_workers"
 end
 
