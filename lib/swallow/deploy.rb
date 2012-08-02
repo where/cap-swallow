@@ -102,7 +102,7 @@ Capistrano::Configuration.instance(true).load do
              :user => username,
              :deployed_at => Time.now,
              :branch => branch,
-             :ruby => capture("ruby -v"),
+             :ruby => capture("ruby -v").strip,
              :ref => ref,
              :properties => properties }
 
