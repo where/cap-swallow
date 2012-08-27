@@ -3,6 +3,12 @@ Capistrano::Configuration.instance(true).load do
   desc "Automatically called as apart of a standard deploy, unless there is a `no_asset_id` configuration. Runs the rake task asset:id:upload."
   namespace :assets do
     task :sync, :roles => :app do
+      run "cd #{latest_release} && RAILS_ENV=#{env} bundle exec rake assets:precompile" do |chan, stream, data|
+        puts "  * [#{chan[:host]}] #{data}" if data.match(/^\s*(Using|Uploading)/)
+      end
+    end
+
+    task :check, :roles => :app do
       if use_asset_sync
         # Only recompile the assets if they have change.  Lifted (and slightly modified) from:
         # http://stackoverflow.com/questions/9016002/speed-up-assetsprecompile-with-rails-3-1-3-2-capistrano-deployment
@@ -20,9 +26,7 @@ Capistrano::Configuration.instance(true).load do
         end
 
         if deploy_via.to_s != 'remote_cache' || ! previous_assets_exist || capture("cd #{cache_path} && #{source.local.log(from)} vendor/assets/ app/assets/ | wc -l").to_i > 0
-          run "cd #{latest_release} && RAILS_ENV=#{env} bundle exec rake assets:precompile" do |chan, stream, data|
-            puts "  * [#{chan[:host]}] #{data}" if data.match(/^\s*(Using|Uploading)/)
-          end
+          sync
         else
           puts "  * Skipping asset pre-compilation because there were no asset changes"
           run "cp -r #{previous_release}/public/assets #{latest_release}/public"
@@ -30,11 +34,12 @@ Capistrano::Configuration.instance(true).load do
 
       end
 
+      # This should probably get axed if nobody is using it anymore.
       run "bundle exec rake asset:id:upload" if use_asset_id
 
     end
   end
 
-  after "deploy:create_symlink", "assets:sync"
+  after "deploy:create_symlink", "assets:check"
 end
 
