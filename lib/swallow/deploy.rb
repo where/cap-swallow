@@ -5,29 +5,46 @@ Capistrano::Configuration.instance(true).load do
   require 'new_relic/recipes'
 
   namespace :deploy do
-    task :start do
+
+    desc "Sets up a fresh server that does not have any projects on it yet"
+    task :init do
+    end
+
+    task :start, :roles => :app do
       if use_unicorn
-        run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} start" do
-        end
+        run "cd #{latest_release} && bundle exec unicorn_rails -c #{current_path}/config/unicorn.rb -E #{rails_env} -D"
       end
     end
 
-    task :stop do
+    task :stop, :roles => :app do
       if use_unicorn
-        run "RAILS_ENV=#{rails_env} #{shared_path}/system/#{application} stop" do
-        end
+        run "kill -QUIT `cat #{shared_path}/pids/unicorn.pid`"
       end
     end
 
     task :restart, :roles => :app, :except => { :no_release => true } do
       run "kill -s USR2 `cat #{shared_path}/pids/unicorn.pid`" if use_unicorn # zero downtime with unicorn
-      run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}" if use_passenger
+    end
+
+    desc "Used on the first deploy of the project to load the schema into a fresh database"
+    task :first do
+      update
+      if use_database
+        load_schema
+        seed
+      end
+      start
     end
 
     task :cold do
       update
       migrate if use_database
       start
+    end
+
+    desc "Loads the database schema into a fresh database"
+    task :load_schema, :roles => :db, :only =>  { :primary => true } do
+      run "cd #{latest_release} && bundle exec rake RAILS_ENV=#{rails_env} db:schema:load"
     end
 
     task :migrate, :roles => :db, :only => { :primary => true } do
@@ -40,13 +57,18 @@ Capistrano::Configuration.instance(true).load do
         else raise ArgumentError, "unknown migration target #{migrate_target.inspect}"
         end
 
-      run "#{source_rvmrc} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
-      run "#{source_rvmrc} && #{rake} RAILS_ENV=#{rails_env} #{migrate_env} db:seed" if seed_on_migration
+      run "cd #{latest_release} && bundle exec rake RAILS_ENV=#{rails_env} #{migrate_env} db:migrate"
+      seed if seed_on_migration
+    end
+
+    desc "Seeds the database"
+    task :seed, :roles => :db, :only => { :primary => true } do
+      run "cd #{latest_release} && bundle exec rake RAILS_ENV=#{rails_env} db:seed"
     end
 
     task :setup_current_ref do
       sha = ''
-      run "cat #{release_path}/REVISION" do |c, s, d|
+      run "cat #{latest_release}/REVISION" do |c, s, d|
         sha = d.strip
       end
       set :ref, sha
@@ -55,14 +77,14 @@ Capistrano::Configuration.instance(true).load do
     desc "Automatically called as apart of a standard deploy. Copies the database config from the shared directory over the one provided."
     task :copy_database_configuration do
       production_db_config = "/usr/share/where/shared_config/#{application}.database.yml"
-      run "cp -p #{production_db_config} #{release_path}/config/database.yml"
+      run "cp -p #{production_db_config} #{latest_release}/config/database.yml"
     end
 
     desc "Automatically called as apart of a standard deploy. Copies configs from the shared directory over the one provided."
     task :copy_configs do
       shared_configs = '/usr/share/where/shared_config'
       config_files.each do |filename|
-        run "cp -p #{shared_configs}/#{filename} #{release_path}/config/#{filename}"
+        run "cp -p #{shared_configs}/#{filename} #{latest_release}/config/#{filename}"
       end
     end
 
@@ -71,7 +93,7 @@ Capistrano::Configuration.instance(true).load do
       setup_current_ref
 
       properties = {}
-      run "cat #{release_path}/config/application.yml 2>/dev/null || true" do |chan, stream, data|
+      run "cat #{latest_release}/config/application.yml 2>/dev/null || true" do |chan, stream, data|
         properties = YAML::load(data) if !data.nil? && data != '' rescue 'error'
       end
 
@@ -79,17 +101,16 @@ Capistrano::Configuration.instance(true).load do
              :user => username,
              :deployed_at => Time.now,
              :branch => branch,
-             :ruby => capture("#{source_rvmrc} && ruby -v"),
-             :rvm => use_rvm ? capture("#{source_rvmrc} && rvm-prompt i v p g") : 'N/A',
+             :ruby => capture("ruby -v").strip,
              :ref => ref,
              :properties => properties }
 
-      run "echo '#{tag.to_json}' > #{release_path}/public/deploy.json"
+      run "echo '#{tag.to_json}' > #{latest_release}/public/deploy.json"
     end
 
     desc "Remove git files from deploy directory"
     task :cleanup_git, :roles => :app do
-      run "rm -rf #{release_path}/.git*"
+      run "rm -rf #{latest_release}/.git*"
     end
 
     desc "Prevent users from stomping on each other"

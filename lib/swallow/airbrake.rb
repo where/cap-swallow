@@ -1,12 +1,12 @@
 Capistrano::Configuration.instance(true).load do
-  desc "Automatically called as apart of a standard deploy. Runs the airbrake:deploy rake task to have hoptoad notified."
+  desc "Automatically called as apart of a standard deploy. Runs the airbrake:deploy rake task to have airbrake notified."
   namespace :airbrake do
-    task :notice_deployment, :depends => 'deploy:setup_current_ref' do
-      run "#{source_rvmrc} && TO=#{rails_env} REVISION=#{ref} USER=#{username} RAILS_ENV=#{rails_env} bundle exec rake airbrake:deploy" if use_airbrake
-      run "#{source_rvmrc} && TO=#{rails_env} REVISION=#{ref} USER=#{username} RAILS_ENV=#{rails_env} bundle exec rake hoptoad:deploy" if use_hoptoad
+    task :notice_deployment, :depends => 'deploy:setup_current_ref', :on_error => :continue do
+      # TODO: This should get moved from being a boolean var to just being a server role
+      capture "cd #{release_path} && TO=#{rails_env} REVISION=#{ref} USER=#{username} RAILS_ENV=#{rails_env} bundle exec rake airbrake:deploy" if use_airbrake
     end
   end
 
-  before "deploy:create_symlink", "airbrake:notice_deployment"
+  after "deploy:update", "airbrake:notice_deployment"
 end
 

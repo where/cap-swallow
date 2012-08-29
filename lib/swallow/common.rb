@@ -17,10 +17,6 @@ Capistrano::Configuration.instance.load do
     set var, default if eval("#{var.to_s}.empty?")
   end
 
-  def rvm_run(command)
-    run "cd #{release_path} && source .rvmrc && #{command}"
-  end
-
   _cset(:application_config) { "#{Dir.pwd}/config/deploy.yml" }
 
   # Load settings from yaml
@@ -44,6 +40,8 @@ Capistrano::Configuration.instance.load do
 
   # Set settings for the env
   settings = config[env]
+
+  set :normalize_asset_timestamps, false
 
   # No settings, halt
   if settings == nil
@@ -81,10 +79,8 @@ Capistrano::Configuration.instance.load do
     set s[0].to_sym, s[1]
   end
 
-  config_files << 'memcache.yml'
-
   # Generate all of the web and app server names
-  server_names = servers.map do |n| 
+  server_names = servers.map do |n|
     "#{n}.#{env_name}"
   end
 
