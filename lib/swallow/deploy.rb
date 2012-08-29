@@ -24,7 +24,6 @@ Capistrano::Configuration.instance(true).load do
 
     task :restart, :roles => :app, :except => { :no_release => true } do
       run "kill -s USR2 `cat #{shared_path}/pids/unicorn.pid`" if use_unicorn # zero downtime with unicorn
-      run "#{try_sudo} touch #{File.join(latest_release,'tmp','restart.txt')}" if use_passenger
     end
 
     desc "Used on the first deploy of the project to load the schema into a fresh database"

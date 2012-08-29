@@ -25,6 +25,6 @@
     * Copy over the database and any other config files (`deploy:copy_database_configuration` and `deploy:copy_configs`)
     * Create the project's deploy tag (`deploy:tag`)
     * Sync any assets that need to be sent to the CDN (`assets:sync`)
-    * Run the airbrake/hoptoad & New Relic deploy notifications (`airbrake:notice_deployment` and `newrelic:notice_deployment`)
+    * Run the airbrake & New Relic deploy notifications (`airbrake:notice_deployment` and `newrelic:notice_deployment`)
     * Run the database migrations (`deploy:migrate`)
  
