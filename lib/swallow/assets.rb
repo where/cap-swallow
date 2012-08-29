@@ -33,10 +33,6 @@ Capistrano::Configuration.instance(true).load do
         end
 
       end
-
-      # This should probably get axed if nobody is using it anymore.
-      run "bundle exec rake asset:id:upload" if use_asset_id
-
     end
   end
 
