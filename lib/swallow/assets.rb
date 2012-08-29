@@ -1,22 +1,17 @@
 Capistrano::Configuration.instance(true).load do
 
-  desc "Automatically called as apart of a standard deploy, unless there is a `no_asset_id` configuration. Runs the rake task asset:id:upload."
   namespace :assets do
+    desc "Runs rake task for asset precompile"
     task :sync, :roles => :app do
       run "cd #{latest_release} && RAILS_ENV=#{env} bundle exec rake assets:precompile" do |chan, stream, data|
         puts "  * [#{chan[:host]}] #{data}" if data.match(/^\s*(Using|Uploading)/)
       end
     end
 
+    desc "Automatically called as apart of a standard deploy, unless there is a `no_asset_id` configuration. Tries to skip asset precomile if its unnecessary."
     task :check, :roles => :app do
       if use_asset_sync
-        # Only recompile the assets if they have change.  Lifted (and slightly modified) from:
-        # http://stackoverflow.com/questions/9016002/speed-up-assetsprecompile-with-rails-3-1-3-2-capistrano-deployment
-        from = source.next_revision(current_revision)
-
-        # deploy_via remote_cache is the only method that currently supports detecting if the assets
-        # have already been precompiled and using that as instead of recompiling.
-
+        # check the prev release to see if there are compiled assets there
         previous_assets_exist = true
         run "if [ -e '#{previous_release}/public/assets' ]; then echo 'FOUND'; else echo 'NOT FOUND'; fi" do |chan, stream, data|
           if data.strip != 'FOUND'
@@ -25,6 +20,11 @@ Capistrano::Configuration.instance(true).load do
           end
         end
 
+        # Only recompile the assets if they have change.  Lifted (and slightly modified) from:
+        # http://stackoverflow.com/questions/9016002/speed-up-assetsprecompile-with-rails-3-1-3-2-capistrano-deployment
+        from = source.next_revision(previous_revision)
+
+        # skip sync if we've generated assets before AND there's been no commits to the vendor/assets or app/assets directory
         if deploy_via.to_s != 'remote_cache' || ! previous_assets_exist || capture("cd #{cache_path} && #{source.local.log(from)} vendor/assets/ app/assets/ | wc -l").to_i > 0
           sync
         else
