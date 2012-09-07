@@ -1,5 +1,7 @@
 # Swallow
 
+Swallow is a library that helps make it easier to deploy projects with Capistrano to AWS.
+
 # New Server Setup
 1. Have systems create a new vanilla web image.
 2. Run `$ cap deploy:init` to initialize the server. This will:
