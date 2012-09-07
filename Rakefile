@@ -13,7 +13,7 @@ require 'rake'
 
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
-  gem.name = "swallow"
+  gem.name = "cap-swallow"
   gem.homepage = "http://github.com/where/swallow"
   gem.license = "MIT license"
   gem.summary = %Q{Common where cap recipies}

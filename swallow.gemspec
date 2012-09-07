@@ -4,7 +4,7 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = "swallow"
+  s.name = "cap-swallow"
   s.version = "2.2.7"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
@@ -40,7 +40,7 @@ Gem::Specification.new do |s|
     "test/helper.rb",
     "test/test_swallow.rb"
   ]
-  s.homepage = "http://github.com/where/swallow"
+  s.homepage = "http://github.com/where/cap-swallow"
   s.licenses = ["MIT license"]
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.10"
