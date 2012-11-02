@@ -105,6 +105,7 @@ Capistrano::Configuration.instance(true).load do
              :ref => ref,
              :properties => properties }
 
+      run "cd #{cache_path} && git log --pretty=oneline | grep 'Merge pull' > #{release_path}/public/qa_info.txt"
       run "echo '#{tag.to_json}' > #{latest_release}/public/deploy.json"
     end
 
