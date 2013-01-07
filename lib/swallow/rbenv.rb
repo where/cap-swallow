@@ -50,15 +50,15 @@ Capistrano::Configuration.instance(true).load do
         apps = self.roles[:app].to_ary
         apps.each_with_index do |host, i|
           print "  * [#{host}] Installing #{ruby_version} "
-          run "RBENV_VERSION='' rbenv install #{ruby_version} --with-openssl-dir=/usr/local" do |chan, stream, data|
-            host = chan[:host].to_sym
+          rbenv.update
+          run "unset RBENV_VERSION && rbenv install #{ruby_version}" do |chan, stream, data|
             if data.match(/^(Downloading|Installing|Installed) .+/)
               puts " ** [out :: #{chan[:host]}] #{data}"
             else
-              print "*** [#{stream} :: #{host}] #{data}"
+              print "*** [#{stream} :: #{chan[:host]}] #{data}"
             end
           end
-          rehash
+          rbenv.rehash
         end
       end
     end
@@ -66,6 +66,14 @@ Capistrano::Configuration.instance(true).load do
     desc "Calls rbenv rehash"
     task :rehash do
       run 'rbenv rehash'
+    end
+
+    desc "update rbenv"
+    task :update do
+      # this is for the early versions of rbenv
+      run "cd ~/.rbenv && git pull"
+      run "cd ~/.rbenv/plugins/ruby-build && git pull"
+      rehash
     end
   end
 
