@@ -26,8 +26,8 @@ Capistrano::Configuration.instance(true).load do
     task :init, :roles => :app do
       puts "  * Installing RVMRC"
       run "git clone git://github.com/sstephenson/rbenv.git ~/.rbenv"
-      run %{echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile}
-      run %{echo 'eval "$(rbenv init -)"' >> ~/.bash_profile}
+      run %{echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc}
+      run %{echo 'eval "$(rbenv init -)"' >> ~/.bashrc}
       run 'mkdir -p ~/.rbenv/plugins'
       run 'git clone git://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build'
     end
