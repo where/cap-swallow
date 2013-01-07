@@ -22,9 +22,9 @@ Capistrano::Configuration.instance(true).load do
       rubies
     end
 
-    desc "Install RVMRC"
+    desc "Install RBENV"
     task :init, :roles => :app do
-      puts "  * Installing RVMRC"
+      puts "  * Installing RBENV"
       run "git clone git://github.com/sstephenson/rbenv.git ~/.rbenv"
       run %{echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc}
       run %{echo 'eval "$(rbenv init -)"' >> ~/.bashrc}
@@ -70,10 +70,9 @@ Capistrano::Configuration.instance(true).load do
 
     desc "update rbenv"
     task :update do
-      # this is for the early versions of rbenv
       run "cd ~/.rbenv && git pull"
       run "cd ~/.rbenv/plugins/ruby-build && git pull"
-      rehash
+      rbenv.rehash
     end
   end
 
