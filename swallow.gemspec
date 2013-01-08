@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
     "Gemfile",
     "Gemfile.lock",
     "LICENSE.txt",
-    "README.md",
+    "README.rdoc",
     "Rakefile",
     "VERSION",
     "config/deploy.yml",
