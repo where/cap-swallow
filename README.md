@@ -1,13 +1,13 @@
-= Swallow
+# Swallow
 
 Swallow is a library that helps make it easier to deploy projects with Capistrano to AWS.
 
-= New Server Setup
+# New Server Setup
 1. Have systems create a new vanilla web image.
 2. Run `$ cap deploy:init` to initialize the server. This will:
     * Install RBEnv (`rbenv:init`)
     
-= New Project Setup
+# New Project Setup
 1. Copy the default `Capfile` from the Swallow project to the project's root.
 2. Copy the default `config/deploy.yml` to the project.
 3. Copy and configure the default `config/newrelic.yml`, or in `config/deploy.yml` set `use_newrelic: false`. 
