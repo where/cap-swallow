@@ -47,31 +47,30 @@ Capistrano::Configuration.instance(true).load do
       # install on the hosts without the proper ruby, if any
       rubies.delete_if{|key, val| val}
       if rubies.count > 0
-        apps = self.roles[:app].to_ary
-        apps.each_with_index do |host, i|
-          print "  * [#{host}] Installing #{ruby_version} "
-          rbenv.update
-          run "unset RBENV_VERSION && rbenv install #{ruby_version}" do |chan, stream, data|
-            if data.match(/^(Downloading|Installing|Installed) .+/)
-              puts " ** [out :: #{chan[:host]}] #{data}"
-            else
-              print "*** [#{stream} :: #{chan[:host]}] #{data}"
-            end
+        hosts = self.roles[:app].to_ary.map(&:to_s)
+
+        puts "  * Installing #{ruby_version} on #{hosts.inspect}"
+        rbenv.update
+        run "unset RBENV_VERSION && rbenv install #{ruby_version}", hosts: hosts do |chan, stream, data|
+          if data.match(/^(Downloading|Installing|Installed) .+/)
+            puts " ** [out :: #{chan[:host]}] #{data}"
+          else
+            puts "*** [#{stream} :: #{chan[:host]}] #{data}"
           end
-          rbenv.rehash
         end
+        rbenv.rehash
       end
     end
 
     desc "Calls rbenv rehash"
     task :rehash do
-      print " ** rbenv rehash"
+      puts " ** rbenv rehash"
       run 'rbenv rehash'
     end
 
     desc "update rbenv"
     task :update do
-      print " ** Updating rbenv"
+      puts " ** Updating rbenv"
       run "cd ~/.rbenv && git pull"
       run "cd ~/.rbenv/plugins/ruby-build && git pull"
       rbenv.rehash
