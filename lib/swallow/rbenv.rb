@@ -65,13 +65,13 @@ Capistrano::Configuration.instance(true).load do
 
     desc "Calls rbenv rehash"
     task :rehash do
-      print " ** [#{host}] rbenv rehash"
+      print " ** rbenv rehash"
       run 'rbenv rehash'
     end
 
     desc "update rbenv"
     task :update do
-      print " ** [#{host}] Updating rbenv"
+      print " ** Updating rbenv"
       run "cd ~/.rbenv && git pull"
       run "cd ~/.rbenv/plugins/ruby-build && git pull"
       rbenv.rehash
