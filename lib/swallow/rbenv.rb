@@ -57,7 +57,6 @@ Capistrano::Configuration.instance(true).load do
           end
         end
 
-        run "RBENV_VERSION=#{ruby_version} gem install bundler"
         rbenv.rehash
       end
     end
