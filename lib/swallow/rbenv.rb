@@ -33,7 +33,7 @@ Capistrano::Configuration.instance(true).load do
     end
 
     desc "Check and install the project's version of ruby if necessary."
-    task :setup_ruby do
+    task :setup_ruby, :roles => :app do
       # determine if each host has the proper ruby installed
       rubies = get_rubies(ruby_version)
       skipped_rubies = rubies.clone
@@ -47,24 +47,23 @@ Capistrano::Configuration.instance(true).load do
       # install on the hosts without the proper ruby, if any
       rubies.delete_if{|key, val| val}
       if rubies.count > 0
-        hosts = self.roles[:app].to_ary.map(&:to_s)
-
-        puts "  * Installing #{ruby_version} on #{hosts.inspect}"
+        puts "  * Installing #{ruby_version}"
         rbenv.update
-        run "unset RBENV_VERSION && rbenv install #{ruby_version}", hosts: hosts do |chan, stream, data|
+        run "unset RBENV_VERSION && rbenv install #{ruby_version}" do |chan, stream, data|
           if data.match(/^(Downloading|Installing|Installed) .+/)
             puts " ** [out :: #{chan[:host]}] #{data}"
           else
             puts "*** [#{stream} :: #{chan[:host]}] #{data}"
           end
         end
+
+        run "RBENV_VERSION=#{ruby_version} gem install bundler"
         rbenv.rehash
       end
     end
 
     desc "Calls rbenv rehash"
     task :rehash do
-      puts " ** rbenv rehash"
       run 'rbenv rehash'
     end
 
