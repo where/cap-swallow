@@ -10,4 +10,5 @@ Capistrano::Configuration.instance(true).load do
     end
 
     after "deploy", "service:setup"
+  end
 end
