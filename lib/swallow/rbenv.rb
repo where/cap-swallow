@@ -68,7 +68,6 @@ Capistrano::Configuration.instance(true).load do
 
     desc "update rbenv"
     task :update do
-      puts " ** Updating rbenv"
       run "cd ~/.rbenv && git pull"
       run "cd ~/.rbenv/plugins/ruby-build && git pull"
       rbenv.rehash
