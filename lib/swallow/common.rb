@@ -86,6 +86,7 @@ Capistrano::Configuration.instance.load do
 
   send(:role, *[:web,  *server_names])
   send(:role, *[:app,  *server_names])
+  send(:role, *[:resque, *server_names])
 
   # migrations will run if use_database is enabled
   role :db,   "#{db_server}.#{env_name}", :no_release => !use_database, :primary => true
