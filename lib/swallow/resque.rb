@@ -12,6 +12,8 @@ Capistrano::Configuration.instance(true).load do
     end
   end
 
+  before "deploy:restart_workers", "whenever:clear_crontab"
+  after  "deploy:restart_workers", "whenever:update_crontab"
   after "deploy:create_symlink", "deploy:restart_workers"
 end
 
